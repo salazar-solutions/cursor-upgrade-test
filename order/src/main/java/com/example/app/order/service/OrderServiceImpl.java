@@ -174,7 +174,11 @@ public class OrderServiceImpl implements OrderService {
 
         ordersCreatedCounter.increment();
 
-        return orderMapper.toResponse(savedOrder);
+        // Fetch saved order lines for the response
+        List<OrderLine> savedOrderLines = orderLineRepository.findByOrderId(savedOrder.getId());
+        OrderResponse response = orderMapper.toResponse(savedOrder);
+        response.setOrderLines(orderMapper.toOrderLineResponseList(savedOrderLines));
+        return response;
     }
 
     @Override
@@ -182,7 +186,10 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse getOrderById(UUID id) {
         Order order = orderRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
-        return orderMapper.toResponse(order);
+        List<OrderLine> orderLines = orderLineRepository.findByOrderId(id);
+        OrderResponse response = orderMapper.toResponse(order);
+        response.setOrderLines(orderMapper.toOrderLineResponseList(orderLines));
+        return response;
     }
 
     @Override
@@ -193,7 +200,12 @@ public class OrderServiceImpl implements OrderService {
         
         return new PagedResponse<>(
             orderPage.getContent().stream()
-                .map(orderMapper::toResponse)
+                .map(order -> {
+                    List<OrderLine> orderLines = orderLineRepository.findByOrderId(order.getId());
+                    OrderResponse response = orderMapper.toResponse(order);
+                    response.setOrderLines(orderMapper.toOrderLineResponseList(orderLines));
+                    return response;
+                })
                 .collect(Collectors.toList()),
             orderPage.getNumber(),
             orderPage.getSize(),
@@ -227,7 +239,10 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(newStatus);
         Order updatedOrder = orderRepository.save(order);
 
-        return orderMapper.toResponse(updatedOrder);
+        List<OrderLine> orderLines = orderLineRepository.findByOrderId(orderId);
+        OrderResponse response = orderMapper.toResponse(updatedOrder);
+        response.setOrderLines(orderMapper.toOrderLineResponseList(orderLines));
+        return response;
     }
 
     private boolean isValidStatusTransition(OrderStatus from, OrderStatus to) {

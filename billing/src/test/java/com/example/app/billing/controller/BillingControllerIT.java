@@ -4,8 +4,6 @@ import com.example.app.billing.domain.PaymentRequest;
 import com.example.app.payment.entity.Payment;
 import com.example.app.payment.entity.PaymentStatus;
 import com.example.app.payment.repository.PaymentRepository;
-import com.example.app.order.entity.Order;
-import com.example.app.order.repository.OrderRepository;
 import com.example.app.user.entity.User;
 import com.example.app.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,20 +49,16 @@ class BillingControllerIT {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    private Order order;
+    private UUID orderId;
 
     @BeforeEach
     void setUp() {
         paymentRepository.deleteAll();
-        orderRepository.deleteAll();
         userRepository.deleteAll();
         entityManager.flush();
         entityManager.clear();
@@ -76,18 +70,14 @@ class BillingControllerIT {
         user.setPasswordHash("hashed");
         user = userRepository.save(user);
 
-        // Create order
-        order = new Order();
-        order.setUserId(user.getId());
-        order.setTotalAmount(new BigDecimal("199.98"));
-        order.setStatus(com.example.app.order.entity.OrderStatus.PENDING);
-        order = orderRepository.save(order);
+        // Generate a test order ID (order entity not needed for billing tests)
+        orderId = UUID.randomUUID();
     }
 
     @Test
     void testCreatePayment_Success() throws Exception {
         PaymentRequest request = new PaymentRequest();
-        request.setOrderId(order.getId());
+        request.setOrderId(orderId);
         request.setAmount(new BigDecimal("199.98"));
 
         mockMvc.perform(post("/api/v1/billing/payments")
@@ -95,21 +85,21 @@ class BillingControllerIT {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.orderId").value(order.getId().toString()))
+                .andExpect(jsonPath("$.orderId").value(orderId.toString()))
                 .andExpect(jsonPath("$.amount").value(199.98))
                 .andExpect(jsonPath("$.status").value("SUCCESS"));
         
         // Verify in database
         Payment saved = paymentRepository.findAll().stream().findFirst().orElse(null);
         assertNotNull(saved);
-        assertEquals(order.getId(), saved.getOrderId());
+        assertEquals(orderId, saved.getOrderId());
         assertEquals(PaymentStatus.SUCCESS, saved.getStatus());
     }
 
     @Test
     void testGetPaymentById_Success() throws Exception {
         Payment payment = new Payment();
-        payment.setOrderId(order.getId());
+        payment.setOrderId(orderId);
         payment.setAmount(new BigDecimal("199.98"));
         payment.setStatus(PaymentStatus.SUCCESS);
         payment.setProviderRef("MOCK-REF-123");
@@ -118,7 +108,7 @@ class BillingControllerIT {
         mockMvc.perform(get("/api/v1/billing/payments/{id}", saved.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(saved.getId().toString()))
-                .andExpect(jsonPath("$.orderId").value(order.getId().toString()))
+                .andExpect(jsonPath("$.orderId").value(orderId.toString()))
                 .andExpect(jsonPath("$.amount").value(199.98))
                 .andExpect(jsonPath("$.status").value("SUCCESS"));
     }
@@ -145,7 +135,7 @@ class BillingControllerIT {
     @Test
     void testCreatePayment_WithRetry() throws Exception {
         PaymentRequest request = new PaymentRequest();
-        request.setOrderId(order.getId());
+        request.setOrderId(orderId);
         request.setAmount(new BigDecimal("299.99"));
 
         // Payment should be created successfully

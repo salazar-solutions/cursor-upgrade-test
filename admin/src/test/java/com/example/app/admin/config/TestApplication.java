@@ -7,17 +7,14 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+
 /**
  * Test application class for integration tests.
  * Excludes UserController and User-related services to avoid dependency on UserMapper during tests.
  */
 @SpringBootApplication
 @ComponentScan(
-    basePackages = "com.example.app",
-    excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = com.example.app.admin.controller.AdminUserController.class),
-        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = com.example.app.user.controller.UserController.class),
-    }
+        basePackages = "com.example.app"
 )
 @EnableJpaRepositories(basePackages = "com.example.app")
 @EntityScan(basePackages = "com.example.app")

@@ -1,7 +1,5 @@
 package com.example.app.order.controller;
 
-import com.example.app.payment.entity.Payment;
-import com.example.app.payment.repository.PaymentRepository;
 import com.example.app.inventory.entity.Inventory;
 import com.example.app.inventory.repository.InventoryRepository;
 import com.example.app.order.domain.OrderLineRequest;
@@ -66,9 +64,6 @@ class OrderControllerIT {
     @Autowired
     private OrderRepository orderRepository;
 
-    @Autowired
-    private PaymentRepository paymentRepository;
-
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -81,7 +76,6 @@ class OrderControllerIT {
     @BeforeEach
     void setUp() {
         orderRepository.deleteAll();
-        paymentRepository.deleteAll();
         inventoryRepository.deleteAll();
         productRepository.deleteAll();
         userRepository.deleteAll();

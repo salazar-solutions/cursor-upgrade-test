@@ -1,12 +1,8 @@
 package com.example.app.payment.service;
 
-import com.example.app.order.entity.Order;
-import com.example.app.order.repository.OrderRepository;
 import com.example.app.payment.entity.Payment;
 import com.example.app.payment.entity.PaymentStatus;
 import com.example.app.payment.repository.PaymentRepository;
-import com.example.app.user.entity.User;
-import com.example.app.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -39,49 +35,30 @@ class PaymentServiceIT {
     @Autowired
     private PaymentRepository paymentRepository;
 
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
     @PersistenceContext
     private EntityManager entityManager;
 
-    private Order order;
+    private UUID orderId;
 
     @BeforeEach
     void setUp() {
         paymentRepository.deleteAll();
-        orderRepository.deleteAll();
-        userRepository.deleteAll();
         entityManager.flush();
         entityManager.clear();
 
-        // Create user
-        User user = new User();
-        user.setUsername("testuser");
-        user.setEmail("test@example.com");
-        user.setPasswordHash("hashed");
-        user = userRepository.save(user);
-
-        // Create order
-        order = new Order();
-        order.setUserId(user.getId());
-        order.setTotalAmount(new BigDecimal("199.98"));
-        order.setStatus(com.example.app.order.entity.OrderStatus.PENDING);
-        order = orderRepository.save(order);
+        // Use a random order ID for testing (payment service doesn't validate order existence)
+        orderId = UUID.randomUUID();
     }
 
     @Test
     void testProcessPayment_Success() {
         BigDecimal amount = new BigDecimal("199.98");
         
-        Payment payment = paymentService.processPayment(order.getId(), amount);
+        Payment payment = paymentService.processPayment(orderId, amount);
 
         assertNotNull(payment);
         assertNotNull(payment.getId());
-        assertEquals(order.getId(), payment.getOrderId());
+        assertEquals(orderId, payment.getOrderId());
         assertEquals(amount, payment.getAmount());
         assertEquals(PaymentStatus.SUCCESS, payment.getStatus());
         assertNotNull(payment.getProviderRef());
@@ -92,11 +69,11 @@ class PaymentServiceIT {
     void testCreatePayment_WithInitialStatus() {
         BigDecimal amount = new BigDecimal("149.99");
         
-        Payment payment = paymentService.createPayment(order.getId(), amount, PaymentStatus.PENDING);
+        Payment payment = paymentService.createPayment(orderId, amount, PaymentStatus.PENDING);
 
         assertNotNull(payment);
         assertNotNull(payment.getId());
-        assertEquals(order.getId(), payment.getOrderId());
+        assertEquals(orderId, payment.getOrderId());
         assertEquals(amount, payment.getAmount());
         assertEquals(PaymentStatus.PENDING, payment.getStatus());
     }
@@ -104,7 +81,7 @@ class PaymentServiceIT {
     @Test
     void testGetPaymentById_Success() {
         BigDecimal amount = new BigDecimal("99.99");
-        Payment createdPayment = paymentService.createPayment(order.getId(), amount, PaymentStatus.SUCCESS);
+        Payment createdPayment = paymentService.createPayment(orderId, amount, PaymentStatus.SUCCESS);
         createdPayment.setProviderRef("TEST-REF-123");
         paymentRepository.save(createdPayment);
 
@@ -112,7 +89,7 @@ class PaymentServiceIT {
 
         assertNotNull(retrievedPayment);
         assertEquals(createdPayment.getId(), retrievedPayment.getId());
-        assertEquals(order.getId(), retrievedPayment.getOrderId());
+        assertEquals(orderId, retrievedPayment.getOrderId());
         assertEquals(amount, retrievedPayment.getAmount());
         assertEquals(PaymentStatus.SUCCESS, retrievedPayment.getStatus());
         assertEquals("TEST-REF-123", retrievedPayment.getProviderRef());
@@ -131,7 +108,7 @@ class PaymentServiceIT {
     void testProcessPayment_WithRetry() {
         BigDecimal amount = new BigDecimal("299.99");
         
-        Payment payment = paymentService.processPayment(order.getId(), amount);
+        Payment payment = paymentService.processPayment(orderId, amount);
 
         assertNotNull(payment);
         assertEquals(PaymentStatus.SUCCESS, payment.getStatus());
