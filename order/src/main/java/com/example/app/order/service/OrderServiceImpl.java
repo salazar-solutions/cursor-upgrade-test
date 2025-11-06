@@ -30,9 +30,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -196,7 +198,24 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public PagedResponse<OrderResponse> getOrders(UUID userId, OrderStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Order> orderPage = orderRepository.findByUserIdAndStatus(userId, status, pageable);
+        Page<Order> orderPage;
+        
+        // Handle query conditionally to avoid PostgreSQL enum parameter type inference issues
+        if (userId != null && status != null) {
+            // When both parameters are provided, use Specification to avoid enum binding issue
+            Specification<Order> spec = (root, query, cb) -> {
+                Predicate userIdPred = cb.equal(root.get("userId"), userId);
+                Predicate statusPred = cb.equal(root.get("status"), status);
+                return cb.and(userIdPred, statusPred);
+            };
+            orderPage = orderRepository.findAll(spec, pageable);
+        } else if (userId != null) {
+            orderPage = orderRepository.findByUserId(userId, pageable);
+        } else if (status != null) {
+            orderPage = orderRepository.findByStatus(status, pageable);
+        } else {
+            orderPage = orderRepository.findAll(pageable);
+        }
         
         return new PagedResponse<>(
             orderPage.getContent().stream()

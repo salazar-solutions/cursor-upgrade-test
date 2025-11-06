@@ -24,7 +24,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -61,11 +60,14 @@ class OrderFlowIT {
 
     @BeforeEach
     void setUp() {
-        userRepository.deleteAll();
-        productRepository.deleteAll();
-        inventoryRepository.deleteAll();
-        entityManager.flush();
+        // Clear entity manager first to avoid tracking stale entities
         entityManager.clear();
+        
+        // Delete in order to respect foreign key constraints
+        // Use deleteAllInBatch which uses SQL DELETE and won't fail if no rows exist
+        inventoryRepository.deleteAllInBatch();
+        productRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
     }
 
     @Test

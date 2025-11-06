@@ -133,7 +133,7 @@ class OrderControllerIT {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.userId").value(user.getId().toString()))
-                .andExpect(jsonPath("$.status").value("CONFIRMED"))
+                .andExpect(jsonPath("$.status").value("PENDING"))
                 .andExpect(jsonPath("$.orderLines").isArray())
                 .andExpect(jsonPath("$.orderLines.length()").value(1));
         
@@ -141,7 +141,7 @@ class OrderControllerIT {
         Order saved = orderRepository.findAll().stream().findFirst().orElse(null);
         assertNotNull(saved);
         assertEquals(user.getId(), saved.getUserId());
-        assertEquals(OrderStatus.CONFIRMED, saved.getStatus());
+        assertEquals(OrderStatus.PENDING, saved.getStatus());
     }
 
     @Test

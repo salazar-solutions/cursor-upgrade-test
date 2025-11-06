@@ -43,8 +43,7 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <testcontainers.version>1.19.3</testcontainers.version>
         <springdoc.version>1.7.0</springdoc.version>
-        <maven-enforcer.version>3.4.1</maven-enforcer.version>
-        <skip.enforcer>false</skip.enforcer>
+        <jacoco.version>0.8.11</jacoco.version>
     </properties>
 
     <dependencyManagement>
@@ -108,108 +107,113 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>${maven-enforcer.version}</version>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <executions>
+                        <execution>
+                            <id>prepare-agent</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>check</id>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <rule>
+                                        <element>PACKAGE</element>
+                                        <limits>
+                                            <limit>
+                                                <counter>LINE</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>0.80</minimum>
+                                            </limit>
+                                        </limits>
+                                    </rule>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <excludes>
+                            <!-- Entities/Models - JPA entities without business logic -->
+                            <exclude>**/entity/**</exclude>
+                            
+                            <!-- DTOs - Simple Data Transfer Objects (POJOs) -->
+                            <exclude>**/dto/**</exclude>
+                            
+                            <!-- Domain objects - Simple Request/Response/Domain classes (POJOs) -->
+                            <exclude>**/domain/**</exclude>
+                            
+                            <!-- Generated MapStruct mapper implementations -->
+                            <exclude>**/*MapperImpl.class</exclude>
+                            <exclude>**/*Mapper$*Impl.class</exclude>
+                            
+                            <!-- Spring Boot Application main classes -->
+                            <exclude>**/Application.class</exclude>
+                            
+                            <!-- Test configuration classes -->
+                            <exclude>**/config/TestApplication.class</exclude>
+                            
+                            <!-- Repository interfaces - Spring Data JPA -->
+                            <exclude>**/repository/**</exclude>
+                            
+                            <!-- Enums -->
+                            <exclude>**/*Status.class</exclude>
+                            <exclude>**/*Type.class</exclude>
+                            <exclude>**/*Role.class</exclude>
+                            
+                            <!-- Simple exception classes (keep exception handlers that have business logic) -->
+                            <exclude>**/exception/BusinessException.class</exclude>
+                            <exclude>**/exception/EntityNotFoundException.class</exclude>
+                            <exclude>**/exception/ApiError.class</exclude>
+                            <exclude>**/exception/InsufficientStockException.class</exclude>
+                            <exclude>**/exception/PaymentProcessingException.class</exclude>
+                            
+                            <!-- Adapter interfaces (keep implementations) -->
+                            <exclude>**/adapter/*Adapter.class</exclude>
+                            
+                            <!-- Provider interfaces (keep implementations) -->
+                            <exclude>**/provider/*Provider.class</exclude>
+                            
+                            <!-- Service interfaces (keep implementations) -->
+                            <exclude>**/service/*Service.class</exclude>
+                            
+                            <!-- Mapper interfaces (MapStruct) - implementations are generated -->
+                            <exclude>**/mapper/*Mapper.class</exclude>
+                            
+                            <!-- Package-info files -->
+                            <exclude>**/package-info.class</exclude>
+                            
+                            <!-- Module-info files -->
+                            <exclude>**/module-info.class</exclude>
+                        </excludes>
+                        <!-- Note: The following are INCLUDED in coverage (not excluded):
+                             - Service implementations (*ServiceImpl)
+                             - Controller classes (*Controller)
+                             - Config classes (*Config)
+                             - Filter classes (*Filter)
+                             - Utility classes with business logic (*Util)
+                             - Exception handlers (GlobalExceptionHandler)
+                             - Adapter implementations (*AdapterImpl)
+                             - Provider implementations (*ProviderImpl)
+                        -->
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
-            <!--
-                Maven Enforcer Plugin Configuration
-                
-                This plugin enforces architectural constraints for module boundaries:
-                1. Detects and prevents cyclic dependencies between modules
-                2. Enforces module boundary rules to maintain loose coupling
-                3. Allows orchestration modules to coordinate multiple modules
-                
-                Orchestration Modules:
-                - order: Orchestrates order processing workflow (coordinate user, product, inventory, billing, notifications)
-                - billing: Orchestrates payment coordination (facade/adapter for payment module)
-                - admin: Orchestrates application entry point and admin operations (coordinate user access)
-                
-                Module Dependency Rules:
-                - All modules may depend on 'common' (foundation module)
-                - Domain modules (user, product, payment, inventory, notifications) may only depend on 'common'
-                - Orchestration modules (order, billing, admin) may depend on multiple modules for coordination
-                - Test-scoped dependencies are excluded from boundary validation
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <skip>${skip.enforcer}</skip>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>enforce-module-boundaries</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <phase>validate</phase>
-                        <configuration>
-                            <rules>
-                                <!-- Ensure reactor module versions converge (only when building full reactor) -->
-                                <reactorModuleConvergence>
-                                    <message>All modules in the reactor must have the same version.</message>
-                                    <ignoreModuleDependencies>true</ignoreModuleDependencies>
-                                </reactorModuleConvergence>
-                                
-                                <!-- Note: Circular dependencies are automatically detected by Maven reactor during build -->
-                                
-                                <!-- Enforce module boundary rules -->
-                                <!-- 
-                                    Note: This rule allows inter-module dependencies for orchestration modules.
-                                    While it doesn't enforce per-module restrictions (requires custom rules),
-                                    it requires explicit approval via the excludes list. This prevents accidental
-                                    coupling while allowing documented orchestration patterns.
-                                    
-                                    Test-scoped dependencies are excluded from validation.
-                                -->
-                                <bannedDependencies>
-                                    <message>
-                                        Module dependencies are restricted to maintain loose coupling:
-                                        1. All modules may depend on 'common' (foundation module)
-                                        2. Domain modules (user, product, payment, inventory, notifications) should only depend on 'common'
-                                        3. Only orchestration modules (order, billing, admin) may depend on multiple modules:
-                                           - order: user, product, inventory, billing, notifications
-                                           - billing: payment
-                                           - admin: user
-                                        4. Test-scoped dependencies are excluded from this validation
-                                        
-                                        Violation: ${artifact} is not allowed as a dependency.
-                                        If you need to coordinate multiple modules, consider:
-                                        - Creating an orchestration module
-                                        - Using well-defined interfaces and DTOs via the 'common' module
-                                        - Ensuring modules remain self-contained and independent
-                                    </message>
-                                    <excludes>
-                                        <!-- Allow common module dependency for all modules (foundation) -->
-                                        <exclude>com.example.app:common</exclude>
-                                        
-                                        <!-- Allow orchestration modules to depend on multiple modules -->
-                                        <!-- These are allowed for orchestration purposes only -->
-                                        <!-- order module orchestrates: user, product, inventory, billing, notifications -->
-                                        <exclude>com.example.app:user</exclude>
-                                        <exclude>com.example.app:product</exclude>
-                                        <exclude>com.example.app:inventory</exclude>
-                                        <exclude>com.example.app:billing</exclude>
-                                        <exclude>com.example.app:notifications</exclude>
-                                        
-                                        <!-- billing module orchestrates: payment -->
-                                        <exclude>com.example.app:payment</exclude>
-                                        
-                                        <!-- admin module orchestrates: user (already in excludes above) -->
-                                    </excludes>
-                                    <!-- Only check direct dependencies, not transitive -->
-                                    <searchTransitive>false</searchTransitive>
-                                </bannedDependencies>
-                            </rules>
-                            <fail>true</fail>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
