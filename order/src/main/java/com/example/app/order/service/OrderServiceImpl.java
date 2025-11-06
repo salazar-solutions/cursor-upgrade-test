@@ -1,0 +1,255 @@
+package com.example.app.order.service;
+
+import com.example.app.common.dto.PagedResponse;
+import com.example.app.common.exception.BusinessException;
+import com.example.app.common.exception.EntityNotFoundException;
+import com.example.app.inventory.domain.ReserveRequest;
+import com.example.app.inventory.dto.InventoryResponse;
+import com.example.app.inventory.service.InventoryService;
+import com.example.app.notifications.domain.NotificationRequest;
+import com.example.app.notifications.service.NotificationService;
+import com.example.app.billing.adapter.BillingAdapter;
+import com.example.app.order.domain.OrderLineRequest;
+import com.example.app.order.domain.OrderRequest;
+import com.example.app.order.domain.OrderStatusChangeRequest;
+import com.example.app.order.dto.OrderLineResponse;
+import com.example.app.order.dto.OrderResponse;
+import com.example.app.order.entity.Order;
+import com.example.app.order.entity.OrderLine;
+import com.example.app.order.entity.OrderStatus;
+import com.example.app.order.entity.OrderStatusHistory;
+import com.example.app.order.mapper.OrderMapper;
+import com.example.app.order.repository.OrderLineRepository;
+import com.example.app.order.repository.OrderRepository;
+import com.example.app.order.repository.OrderStatusHistoryRepository;
+import com.example.app.product.dto.ProductResponse;
+import com.example.app.product.service.ProductService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/**
+ * Implementation of order service with business logic.
+ */
+@Service
+@Transactional
+public class OrderServiceImpl implements OrderService {
+    
+    @Autowired
+    private OrderRepository orderRepository;
+    
+    @Autowired
+    private OrderLineRepository orderLineRepository;
+    
+    @Autowired
+    private OrderStatusHistoryRepository orderStatusHistoryRepository;
+    
+    @Autowired
+    private ProductService productService;
+    
+    @Autowired
+    private InventoryService inventoryService;
+    
+    @Autowired
+    private BillingAdapter billingAdapter;
+    
+    @Autowired
+    private NotificationService notificationService;
+    
+    @Autowired
+    private OrderMapper orderMapper;
+    
+    private final Counter ordersCreatedCounter;
+
+    @Autowired
+    public OrderServiceImpl(MeterRegistry meterRegistry) {
+        this.ordersCreatedCounter = Counter.builder("orders.created")
+            .description("Number of orders created")
+            .register(meterRegistry);
+    }
+    
+    // Setters for testing
+    public void setOrderRepository(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+    
+    public void setOrderLineRepository(OrderLineRepository orderLineRepository) {
+        this.orderLineRepository = orderLineRepository;
+    }
+    
+    public void setOrderStatusHistoryRepository(OrderStatusHistoryRepository orderStatusHistoryRepository) {
+        this.orderStatusHistoryRepository = orderStatusHistoryRepository;
+    }
+    
+    public void setProductService(ProductService productService) {
+        this.productService = productService;
+    }
+    
+    public void setInventoryService(InventoryService inventoryService) {
+        this.inventoryService = inventoryService;
+    }
+    
+    public void setBillingAdapter(BillingAdapter billingAdapter) {
+        this.billingAdapter = billingAdapter;
+    }
+    
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+    
+    public void setOrderMapper(OrderMapper orderMapper) {
+        this.orderMapper = orderMapper;
+    }
+
+    @Override
+    public OrderResponse createOrder(OrderRequest request) {
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        List<OrderLine> orderLines = new ArrayList<>();
+
+        // Validate products and calculate total
+        for (OrderLineRequest lineRequest : request.getOrderLines()) {
+            ProductResponse product = productService.getProductById(lineRequest.getProductId());
+            BigDecimal lineTotal = product.getPrice().multiply(new BigDecimal(lineRequest.getQuantity()));
+            totalAmount = totalAmount.add(lineTotal);
+
+            OrderLine orderLine = new OrderLine();
+            orderLine.setProductId(lineRequest.getProductId());
+            orderLine.setQuantity(lineRequest.getQuantity());
+            orderLine.setPrice(product.getPrice());
+            orderLines.add(orderLine);
+        }
+
+        // Create order first
+        Order order = new Order();
+        order.setUserId(request.getUserId());
+        order.setTotalAmount(totalAmount);
+        order.setStatus(OrderStatus.PENDING);
+        Order savedOrder = orderRepository.save(order);
+
+        // Reserve inventory for each product
+        for (OrderLineRequest lineRequest : request.getOrderLines()) {
+            ReserveRequest reserveRequest = new ReserveRequest();
+            reserveRequest.setQuantity(lineRequest.getQuantity());
+            inventoryService.reserveInventory(lineRequest.getProductId(), reserveRequest);
+        }
+
+        // Create payment record via BillingAdapter
+        UUID paymentId = billingAdapter.createPayment(savedOrder.getId(), totalAmount);
+
+        // Create order lines
+        for (OrderLine orderLine : orderLines) {
+            orderLine.setOrderId(savedOrder.getId());
+            orderLineRepository.save(orderLine);
+        }
+
+        // Record initial status history
+        OrderStatusHistory history = new OrderStatusHistory();
+        history.setOrderId(savedOrder.getId());
+        history.setFromStatus(null);
+        history.setToStatus(OrderStatus.PENDING);
+        orderStatusHistoryRepository.save(history);
+
+        // Publish notification (async stub)
+        try {
+            NotificationRequest notificationRequest = new NotificationRequest();
+            notificationRequest.setUserId(request.getUserId().toString());
+            notificationRequest.setMessage("Order " + savedOrder.getId() + " has been created");
+            notificationRequest.setType("ORDER_CREATED");
+            notificationService.sendNotification(notificationRequest);
+        } catch (Exception e) {
+            // Log but don't fail the order creation
+            // In production, this would be handled by a message queue
+        }
+
+        ordersCreatedCounter.increment();
+
+        return orderMapper.toResponse(savedOrder);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderById(UUID id) {
+        Order order = orderRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
+        return orderMapper.toResponse(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<OrderResponse> getOrders(UUID userId, OrderStatus status, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orderPage = orderRepository.findByUserIdAndStatus(userId, status, pageable);
+        
+        return new PagedResponse<>(
+            orderPage.getContent().stream()
+                .map(orderMapper::toResponse)
+                .collect(Collectors.toList()),
+            orderPage.getNumber(),
+            orderPage.getSize(),
+            orderPage.getTotalElements(),
+            orderPage.getTotalPages()
+        );
+    }
+
+    @Override
+    public OrderResponse changeOrderStatus(UUID orderId, OrderStatusChangeRequest request) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + orderId));
+
+        OrderStatus currentStatus = order.getStatus();
+        OrderStatus newStatus = request.getStatus();
+
+        // Validate status transition
+        if (!isValidStatusTransition(currentStatus, newStatus)) {
+            throw new BusinessException(
+                String.format("Invalid status transition from %s to %s", currentStatus, newStatus)
+            );
+        }
+
+        // Record status history
+        OrderStatusHistory history = new OrderStatusHistory();
+        history.setOrderId(orderId);
+        history.setFromStatus(currentStatus);
+        history.setToStatus(newStatus);
+        orderStatusHistoryRepository.save(history);
+
+        order.setStatus(newStatus);
+        Order updatedOrder = orderRepository.save(order);
+
+        return orderMapper.toResponse(updatedOrder);
+    }
+
+    private boolean isValidStatusTransition(OrderStatus from, OrderStatus to) {
+        if (from == null) {
+            return to == OrderStatus.PENDING;
+        }
+
+        switch (from) {
+            case PENDING:
+                return to == OrderStatus.CONFIRMED || to == OrderStatus.CANCELLED;
+            case CONFIRMED:
+                return to == OrderStatus.PROCESSING || to == OrderStatus.CANCELLED;
+            case PROCESSING:
+                return to == OrderStatus.SHIPPED || to == OrderStatus.CANCELLED;
+            case SHIPPED:
+                return to == OrderStatus.DELIVERED;
+            case DELIVERED:
+            case CANCELLED:
+                return false;
+            default:
+                return false;
+        }
+    }
+}
+
