@@ -14,7 +14,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * REST controller for notification operations.
+ * REST controller for notification delivery operations.
+ * 
+ * <p>This controller provides endpoints for sending notifications to users.
+ * Notifications are typically sent asynchronously and failures are handled
+ * gracefully to avoid impacting the main business flow.
+ * 
+ * <p><b>Base Path:</b> /api/v1/notifications
+ * 
+ * <p><b>Notification Types:</b> Common notification types include:
+ * <ul>
+ *   <li>ORDER_CREATED: When a new order is created</li>
+ *   <li>ORDER_STATUS_CHANGED: When order status is updated</li>
+ *   <li>PAYMENT_PROCESSED: When payment is completed</li>
+ * </ul>
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/v1/notifications")

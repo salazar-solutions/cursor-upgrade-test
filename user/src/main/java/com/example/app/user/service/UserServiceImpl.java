@@ -23,7 +23,23 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of user service.
+ * Implementation of user service with validation and business logic.
+ * 
+ * <p>This service handles user CRUD operations with the following validations:
+ * <ul>
+ *   <li>Username uniqueness check on create and update</li>
+ *   <li>Email uniqueness check on create and update</li>
+ *   <li>Password hashing using BCrypt before storage</li>
+ * </ul>
+ * 
+ * <p><b>Password Security:</b> Passwords are never stored in plain text.
+ * They are hashed using BCrypt before persistence. Plain passwords are never
+ * returned in responses.
+ * 
+ * <p><b>Default Role:</b> New users are assigned the USER role by default.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @Service
 @Transactional

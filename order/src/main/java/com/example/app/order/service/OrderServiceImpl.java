@@ -42,7 +42,32 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of order service with business logic.
+ * Implementation of order service with comprehensive business logic and orchestration.
+ * 
+ * <p>This service coordinates order creation across multiple modules:
+ * <ul>
+ *   <li><b>Product Service:</b> Validates products and retrieves pricing</li>
+ *   <li><b>Inventory Service:</b> Reserves stock for order items</li>
+ *   <li><b>Billing Adapter:</b> Creates payment records</li>
+ *   <li><b>Notification Service:</b> Sends order creation notifications</li>
+ * </ul>
+ * 
+ * <p><b>Order Lifecycle:</b>
+ * <ol>
+ *   <li>Order created with PENDING status</li>
+ *   <li>Inventory reserved for all items</li>
+ *   <li>Payment record created</li>
+ *   <li>Status transitions: PENDING → CONFIRMED → PROCESSING → SHIPPED → DELIVERED</li>
+ *   <li>Orders can be CANCELLED at any point before DELIVERED</li>
+ * </ol>
+ * 
+ * <p><b>Metrics:</b> Order creation is tracked via Micrometer counter "orders.created".
+ * 
+ * <p><b>Thread Safety:</b> This service is thread-safe when used with Spring's
+ * default singleton bean scope. Database transactions ensure data consistency.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @Service
 @Transactional
@@ -114,6 +139,24 @@ public class OrderServiceImpl implements OrderService {
         this.orderMapper = orderMapper;
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>This implementation performs the following steps atomically:
+     * <ol>
+     *   <li>Validates all products exist and calculates total amount</li>
+     *   <li>Creates order entity with PENDING status</li>
+     *   <li>Reserves inventory for each product (may throw InsufficientStockException)</li>
+     *   <li>Creates payment record via billing adapter</li>
+     *   <li>Saves order lines</li>
+     *   <li>Records initial status history</li>
+     *   <li>Sends notification (non-blocking, failures are logged but don't fail order)</li>
+     *   <li>Increments order creation metric</li>
+     * </ol>
+     * 
+     * <p><b>Transaction:</b> All steps are executed within a single transaction.
+     * If any step fails, the entire operation is rolled back.
+     */
     @Override
     public OrderResponse createOrder(OrderRequest request) {
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -183,6 +226,12 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>Fetches the order and all associated order lines from the database.
+     * This is a read-only operation.
+     */
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(UUID id) {
@@ -194,6 +243,13 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>Uses JPA Specifications to handle complex filtering scenarios, particularly
+     * to avoid PostgreSQL enum parameter binding issues when both userId and status
+     * filters are provided.
+     */
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<OrderResponse> getOrders(UUID userId, OrderStatus status, int page, int size) {
@@ -233,6 +289,12 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>Validates the status transition using {@link #isValidStatusTransition(OrderStatus, OrderStatus)}
+     * before applying the change. Status history is recorded for audit purposes.
+     */
     @Override
     public OrderResponse changeOrderStatus(UUID orderId, OrderStatusChangeRequest request) {
         Order order = orderRepository.findById(orderId)
@@ -264,6 +326,23 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    /**
+     * Validates whether a status transition is allowed according to business rules.
+     * 
+     * <p>Status transition rules:
+     * <ul>
+     *   <li>New orders (from=null) can only start as PENDING</li>
+     *   <li>PENDING can transition to CONFIRMED or CANCELLED</li>
+     *   <li>CONFIRMED can transition to PROCESSING or CANCELLED</li>
+     *   <li>PROCESSING can transition to SHIPPED or CANCELLED</li>
+     *   <li>SHIPPED can only transition to DELIVERED</li>
+     *   <li>DELIVERED and CANCELLED are terminal states (no transitions allowed)</li>
+     * </ul>
+     * 
+     * @param from the current order status (null for new orders)
+     * @param to the desired new status
+     * @return true if the transition is valid, false otherwise
+     */
     private boolean isValidStatusTransition(OrderStatus from, OrderStatus to) {
         if (from == null) {
             return to == OrderStatus.PENDING;

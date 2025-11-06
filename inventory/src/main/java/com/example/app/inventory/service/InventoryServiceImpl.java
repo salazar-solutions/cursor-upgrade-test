@@ -17,7 +17,30 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 /**
- * Implementation of inventory service with atomic operations.
+ * Implementation of inventory service with atomic stock management operations.
+ * 
+ * <p>This service manages product inventory with the following features:
+ * <ul>
+ *   <li>Atomic stock reservation (prevents race conditions)</li>
+ *   <li>Stock release for cancelled orders</li>
+ *   <li>Metrics tracking for failed reservations</li>
+ * </ul>
+ * 
+ * <p><b>Stock Management:</b>
+ * <ul>
+ *   <li>Available stock: Quantity available for reservation</li>
+ *   <li>Reserved stock: Quantity currently reserved for orders</li>
+ *   <li>Total stock: Available + Reserved</li>
+ * </ul>
+ * 
+ * <p><b>Concurrency:</b> All operations are transactional and use database-level
+ * locking to prevent race conditions when multiple orders reserve the same product.
+ * 
+ * <p><b>Metrics:</b> Failed reservations are tracked via Micrometer counter
+ * "inventory.reservations.failed".
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @Service
 @Transactional

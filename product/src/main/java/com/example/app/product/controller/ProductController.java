@@ -16,7 +16,22 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 /**
- * REST controller for product operations.
+ * REST controller for product catalog management operations.
+ * 
+ * <p>This controller provides endpoints for:
+ * <ul>
+ *   <li>Product creation and management</li>
+ *   <li>Product retrieval by ID</li>
+ *   <li>Product search with pagination</li>
+ * </ul>
+ * 
+ * <p><b>Base Path:</b> /api/v1/products
+ * 
+ * <p><b>Search:</b> Product search is case-insensitive and matches against
+ * product name and description fields.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/v1/products")

@@ -19,7 +19,21 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of product service.
+ * Implementation of product service with validation and search functionality.
+ * 
+ * <p>This service handles product catalog operations with the following features:
+ * <ul>
+ *   <li>SKU uniqueness validation on product creation</li>
+ *   <li>Case-insensitive product search by name or description</li>
+ *   <li>Pagination support for product listings</li>
+ * </ul>
+ * 
+ * <p><b>Search Behavior:</b> Product search matches against both name and description
+ * fields using case-insensitive contains matching. Empty or null search terms return
+ * all products.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @Service
 @Transactional

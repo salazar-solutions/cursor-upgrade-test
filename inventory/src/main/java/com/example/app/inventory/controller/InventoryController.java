@@ -15,7 +15,32 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 /**
- * REST controller for inventory operations.
+ * REST controller for inventory management operations.
+ * 
+ * <p>This controller provides endpoints for:
+ * <ul>
+ *   <li>Inventory stock level queries</li>
+ *   <li>Inventory reservation (for order processing)</li>
+ *   <li>Inventory release (for order cancellation)</li>
+ * </ul>
+ * 
+ * <p><b>Base Path:</b> /api/v1/inventory
+ * 
+ * <p><b>Stock Management:</b>
+ * <ul>
+ *   <li>Reservation decreases available stock and increases reserved stock</li>
+ *   <li>Release increases available stock and decreases reserved stock</li>
+ *   <li>Total stock = available + reserved</li>
+ * </ul>
+ * 
+ * <p><b>Business Rules:</b>
+ * <ul>
+ *   <li>Cannot reserve more than available stock</li>
+ *   <li>Cannot release more than reserved stock</li>
+ * </ul>
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/v1/inventory")

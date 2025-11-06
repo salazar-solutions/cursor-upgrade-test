@@ -3,7 +3,28 @@ package com.example.app.common.dto;
 import java.util.List;
 
 /**
- * Generic pagination response wrapper.
+ * Generic pagination response wrapper for API endpoints that return paginated data.
+ * 
+ * <p>This class provides a standard structure for paginated responses, including
+ * the data content, pagination metadata (page number, size, total elements, total pages),
+ * and navigation information.
+ * 
+ * <p><b>Usage Example:</b>
+ * <pre>{@code
+ * // In a service method:
+ * Page<User> page = userRepository.findAll(pageable);
+ * return new PagedResponse<>(
+ *     page.getContent().stream().map(mapper::toResponse).collect(toList()),
+ *     page.getNumber(),
+ *     page.getSize(),
+ *     page.getTotalElements(),
+ *     page.getTotalPages()
+ * );
+ * }</pre>
+ * 
+ * @param <T> the type of elements in the content list
+ * @author Generated
+ * @since 1.0.0
  */
 public class PagedResponse<T> {
     private List<T> content;
@@ -12,9 +33,21 @@ public class PagedResponse<T> {
     private long totalElements;
     private int totalPages;
 
+    /**
+     * Default constructor for JSON deserialization.
+     */
     public PagedResponse() {
     }
 
+    /**
+     * Constructs a paginated response with content and metadata.
+     * 
+     * @param content the list of items for the current page
+     * @param page the zero-based page number
+     * @param size the number of items per page
+     * @param totalElements the total number of elements across all pages
+     * @param totalPages the total number of pages
+     */
     public PagedResponse(List<T> content, int page, int size, long totalElements, int totalPages) {
         this.content = content;
         this.page = page;

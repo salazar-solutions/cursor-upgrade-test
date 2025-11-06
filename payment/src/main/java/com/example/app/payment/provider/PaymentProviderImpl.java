@@ -6,12 +6,36 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
- * Payment provider implementation for processing payments.
- * This is a real implementation that processes payments successfully.
+ * Implementation of payment provider for processing payments through external gateways.
+ * 
+ * <p>This is a stub implementation that simulates payment processing. In a production
+ * environment, this would communicate with actual payment gateways (Stripe, PayPal, etc.)
+ * via their APIs.
+ * 
+ * <p><b>Current Behavior:</b>
+ * <ul>
+ *   <li>Validates order ID and amount (must be positive)</li>
+ *   <li>Generates a mock provider reference (transaction ID)</li>
+ *   <li>Always succeeds (no actual payment gateway communication)</li>
+ * </ul>
+ * 
+ * <p><b>Provider Reference Format:</b> PROV-REF-{orderId-prefix}-{timestamp}
+ * 
+ * <p><b>Production Note:</b> Replace this implementation with actual payment gateway
+ * integration. Handle provider-specific errors, timeouts, and retries appropriately.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @Component
 public class PaymentProviderImpl implements PaymentProvider {
     
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>Validates input parameters and generates a mock provider reference.
+     * In production, this would make an HTTP call to the payment gateway API.
+     */
     @Override
     public String processPayment(UUID orderId, BigDecimal amount) throws PaymentProcessingException {
         // Validate input

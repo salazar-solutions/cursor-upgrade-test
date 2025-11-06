@@ -14,8 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 /**
- * Implementation of billing service.
- * Uses PaymentService from payment module for payment processing.
+ * Implementation of billing service that orchestrates payment processing.
+ * 
+ * <p>This service acts as an adapter layer between the billing module and the
+ * payment module, providing payment orchestration with metrics tracking.
+ * 
+ * <p><b>Metrics:</b> Payment attempts are tracked via Micrometer counter "payments.attempted".
+ * 
+ * <p><b>Integration:</b> Delegates actual payment processing to {@link PaymentService}
+ * from the payment module, which handles retry logic and provider communication.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @Service
 @Transactional
@@ -45,6 +55,13 @@ public class BillingServiceImpl implements BillingService {
         this.paymentMapper = paymentMapper;
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>Increments the payment attempt counter, then delegates to PaymentService
+     * for actual processing. The payment may be in PROCESSING, SUCCESS, or FAILED
+     * status depending on the processing result.
+     */
     @Override
     public PaymentResponse createPayment(PaymentRequest request) {
         paymentsAttemptedCounter.increment();
@@ -55,6 +72,11 @@ public class BillingServiceImpl implements BillingService {
         return paymentMapper.toResponse(payment);
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>Read-only operation that retrieves payment information from the payment module.
+     */
     @Override
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentById(UUID id) {

@@ -19,7 +19,21 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 /**
- * REST controller for user operations.
+ * REST controller for user management and authentication operations.
+ * 
+ * <p>This controller provides endpoints for:
+ * <ul>
+ *   <li>User CRUD operations (create, read, update, list)</li>
+ *   <li>User authentication and JWT token generation</li>
+ * </ul>
+ * 
+ * <p><b>Base Path:</b> /api/v1/users
+ * 
+ * <p><b>Authentication:</b> Most endpoints require JWT authentication in production.
+ * The /auth/login endpoint is publicly accessible.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/v1/users")

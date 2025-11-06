@@ -17,7 +17,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * REST controller for admin operations.
+ * REST controller for administrative and monitoring operations.
+ * 
+ * <p>This controller provides endpoints for:
+ * <ul>
+ *   <li>Application health checks (including database connectivity)</li>
+ *   <li>Metrics endpoint information</li>
+ * </ul>
+ * 
+ * <p><b>Base Path:</b> /api/v1/admin
+ * 
+ * <p><b>Health Check:</b> The health endpoint checks:
+ * <ul>
+ *   <li>Application status (always UP if endpoint is reachable)</li>
+ *   <li>Database connectivity (validates connection within 1 second)</li>
+ * </ul>
+ * 
+ * <p><b>Metrics:</b> Detailed metrics are available via Spring Boot Actuator
+ * at /actuator/metrics. This endpoint provides a reference to the actuator endpoint.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/v1/admin")

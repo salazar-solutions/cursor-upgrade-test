@@ -15,7 +15,25 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 /**
- * REST controller for billing operations.
+ * REST controller for billing and payment operations.
+ * 
+ * <p>This controller provides endpoints for:
+ * <ul>
+ *   <li>Payment creation and processing</li>
+ *   <li>Payment retrieval by ID</li>
+ * </ul>
+ * 
+ * <p><b>Base Path:</b> /api/v1/billing/payments
+ * 
+ * <p><b>Payment Processing:</b> Payments are processed through external payment
+ * providers with automatic retry logic. Payment status can be PROCESSING, SUCCESS,
+ * or FAILED.
+ * 
+ * <p><b>Integration:</b> This controller is typically called by the order module
+ * via BillingAdapter, but can also be used directly for payment operations.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/v1/billing/payments")

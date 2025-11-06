@@ -13,7 +13,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * Implementation of authentication service.
+ * Implementation of authentication service with JWT token generation.
+ * 
+ * <p>This service authenticates users by validating username and password,
+ * then generates a JWT token for use in subsequent API requests.
+ * 
+ * <p><b>Authentication Flow:</b>
+ * <ol>
+ *   <li>Lookup user by username</li>
+ *   <li>Verify password using BCrypt password encoder</li>
+ *   <li>Generate JWT token with user ID and username</li>
+ *   <li>Return token and user information</li>
+ * </ol>
+ * 
+ * <p><b>Security:</b> Invalid credentials result in a generic error message
+ * ("Invalid username or password") to prevent username enumeration attacks.
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @Service
 public class AuthServiceImpl implements AuthService {

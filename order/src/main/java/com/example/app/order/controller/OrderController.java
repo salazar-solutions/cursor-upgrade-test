@@ -18,7 +18,25 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 /**
- * REST controller for order operations.
+ * REST controller for order management operations.
+ * 
+ * <p>This controller provides endpoints for:
+ * <ul>
+ *   <li>Order creation with product validation and inventory reservation</li>
+ *   <li>Order retrieval by ID or with filtering (user, status)</li>
+ *   <li>Order status management with state transition validation</li>
+ * </ul>
+ * 
+ * <p><b>Base Path:</b> /api/v1/orders
+ * 
+ * <p><b>Order Lifecycle:</b> Orders progress through statuses: PENDING → CONFIRMED →
+ * PROCESSING → SHIPPED → DELIVERED. Orders can be CANCELLED at any point before DELIVERED.
+ * 
+ * <p><b>Integration:</b> Order creation integrates with inventory (stock reservation),
+ * billing (payment creation), and notifications (order updates).
+ * 
+ * @author Generated
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/v1/orders")

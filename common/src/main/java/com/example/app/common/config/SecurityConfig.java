@@ -18,6 +18,34 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
 
+/**
+ * Spring Security configuration that provides environment-aware security settings.
+ * 
+ * <p>This configuration adapts security behavior based on active Spring profiles:
+ * <ul>
+ *   <li><b>Development profiles</b> (local, test, integration): Security disabled, all requests permitted</li>
+ *   <li><b>Production profiles</b>: JWT authentication enabled, protected endpoints require valid token</li>
+ * </ul>
+ * 
+ * <p><b>Security Features:</b>
+ * <ul>
+ *   <li>Stateless session management (no server-side sessions)</li>
+ *   <li>CSRF protection disabled (stateless API)</li>
+ *   <li>JWT authentication filter integration (production only)</li>
+ *   <li>Public endpoints: /api/auth/**, /api/public/**</li>
+ * </ul>
+ * 
+ * <p><b>Configuration:</b>
+ * <p>The security filter chain is configured based on active profiles. In development,
+ * security is completely disabled for easier testing. In production, JWT authentication
+ * is enforced via {@link JwtAuthenticationFilter}.
+ * 
+ * <p><b>Warning:</b> Security is automatically disabled in development environments.
+ * Never deploy with local/test/integration profiles active in production.
+ * 
+ * @author Generated
+ * @since 1.0.0
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -30,6 +58,9 @@ public class SecurityConfig {
     @Autowired(required = false)
     private JwtAuthenticationFilter jwtAuthFilter;
 
+    /**
+     * Logs security configuration initialization details.
+     */
     @PostConstruct
     public void init() {
         log.info("========================================");
@@ -39,11 +70,35 @@ public class SecurityConfig {
         log.info("========================================");
     }
 
+    /**
+     * Provides BCrypt password encoder for hashing user passwords.
+     * 
+     * <p>BCrypt is a strong, adaptive hashing algorithm suitable for password storage.
+     * The encoder uses a strength of 10 (default), which provides good security
+     * with acceptable performance.
+     * 
+     * @return BCryptPasswordEncoder instance
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Configures the Spring Security filter chain based on active profiles.
+     * 
+     * <p>In development (local/test/integration profiles), security is disabled.
+     * In production, JWT authentication is enforced with the following rules:
+     * <ul>
+     *   <li>Public endpoints: /api/auth/**, /api/public/**</li>
+     *   <li>All other endpoints require authentication</li>
+     *   <li>JWT filter processes Authorization headers</li>
+     * </ul>
+     * 
+     * @param http HttpSecurity builder for configuring security
+     * @return configured SecurityFilterChain
+     * @throws Exception if security configuration fails
+     */
     @Bean
     @org.springframework.context.annotation.Primary
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
