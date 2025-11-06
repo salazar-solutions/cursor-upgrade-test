@@ -150,5 +150,41 @@ class BillingControllerIT {
         assertNotNull(saved);
         assertEquals(new BigDecimal("299.99"), saved.getAmount());
     }
+
+    @Test
+    void testCreatePayment_InvalidAmount_Zero() throws Exception {
+        PaymentRequest request = new PaymentRequest();
+        request.setOrderId(orderId);
+        request.setAmount(BigDecimal.ZERO); // Invalid: must be greater than 0
+
+        mockMvc.perform(post("/api/v1/billing/payments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testCreatePayment_InvalidAmount_Negative() throws Exception {
+        PaymentRequest request = new PaymentRequest();
+        request.setOrderId(orderId);
+        request.setAmount(new BigDecimal("-10.00")); // Invalid: negative amount
+
+        mockMvc.perform(post("/api/v1/billing/payments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testCreatePayment_InvalidAmount_Null() throws Exception {
+        PaymentRequest request = new PaymentRequest();
+        request.setOrderId(orderId);
+        request.setAmount(null); // Invalid: null amount
+
+        mockMvc.perform(post("/api/v1/billing/payments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
 }
 

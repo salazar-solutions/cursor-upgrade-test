@@ -107,7 +107,8 @@ public class SecurityConfig {
         boolean isDevEnvironment = Arrays.stream(activeProfiles)
                 .anyMatch(profile -> profile.equals("local") ||
                         profile.equals("test") ||
-                        profile.equals("integration"));
+                        profile.equals("integration") ||
+                        profile.equals("regression"));
 
         log.info("Active profiles: {}", Arrays.toString(activeProfiles));
         log.info("Is dev environment: {}", isDevEnvironment);

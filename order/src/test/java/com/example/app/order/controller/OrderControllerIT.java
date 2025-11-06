@@ -276,6 +276,60 @@ class OrderControllerIT {
     }
 
     @Test
+    void testCreateOrder_InvalidProductId() throws Exception {
+        OrderRequest request = new OrderRequest();
+        request.setUserId(user.getId());
+        OrderLineRequest line1 = new OrderLineRequest();
+        line1.setProductId(UUID.randomUUID()); // Non-existent product
+        line1.setQuantity(2);
+        request.setOrderLines(Collections.singletonList(line1));
+
+        mockMvc.perform(post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testCreateOrder_ValidationError_EmptyOrderLines() throws Exception {
+        OrderRequest request = new OrderRequest();
+        request.setUserId(user.getId());
+        request.setOrderLines(Collections.emptyList());
+
+        mockMvc.perform(post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testCreateOrder_ValidationError_InvalidQuantity() throws Exception {
+        OrderRequest request = new OrderRequest();
+        request.setUserId(user.getId());
+        OrderLineRequest line1 = new OrderLineRequest();
+        line1.setProductId(product1.getId());
+        line1.setQuantity(0); // Invalid quantity
+        request.setOrderLines(Collections.singletonList(line1));
+
+        mockMvc.perform(post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testChangeOrderStatus_NotFound() throws Exception {
+        OrderStatusChangeRequest request = new OrderStatusChangeRequest();
+        request.setStatus(OrderStatus.CONFIRMED);
+
+        UUID nonExistentId = UUID.randomUUID();
+        mockMvc.perform(post("/api/v1/orders/{id}/status", nonExistentId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void testEndToEndOrderFlow() throws Exception {
         // Clear entity manager first to avoid tracking stale entities
         entityManager.clear();

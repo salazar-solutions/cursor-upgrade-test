@@ -81,5 +81,42 @@ class NotificationControllerIT {
                 .content(objectMapper.writeValueAsString(request2)))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void testSendNotification_EmptyMessage() throws Exception {
+        NotificationRequest request = new NotificationRequest();
+        request.setUserId("user-123");
+        request.setMessage(""); // Empty message
+        request.setType("ORDER_CREATED");
+
+        mockMvc.perform(post("/api/v1/notifications/send")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testSendNotification_EmptyType() throws Exception {
+        NotificationRequest request = new NotificationRequest();
+        request.setUserId("user-123");
+        request.setMessage("Test message");
+        request.setType(""); // Empty type
+
+        mockMvc.perform(post("/api/v1/notifications/send")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testSendNotification_NullFields() throws Exception {
+        NotificationRequest request = new NotificationRequest();
+        // All fields null
+
+        mockMvc.perform(post("/api/v1/notifications/send")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
 }
 
