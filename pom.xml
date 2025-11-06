@@ -29,6 +29,7 @@
         <module>billing</module>
         <module>notifications</module>
         <module>admin</module>
+        <module>regression-test</module>
     </modules>
 
     <properties>
