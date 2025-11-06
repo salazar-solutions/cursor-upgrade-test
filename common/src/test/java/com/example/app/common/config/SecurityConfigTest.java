@@ -3,20 +3,14 @@ package com.example.app.common.config;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = {SecurityConfigTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {SecurityConfig.class})
+@ActiveProfiles("test")
 class SecurityConfigTest {
-
-    @MockBean
-    private Environment environment;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -65,14 +59,6 @@ class SecurityConfigTest {
         // But both should match the original password
         assertTrue(encoder.matches(password, encoded1));
         assertTrue(encoder.matches(password, encoded2));
-    }
-
-    @Configuration
-    static class TestConfig {
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-            return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
-        }
     }
 }
 

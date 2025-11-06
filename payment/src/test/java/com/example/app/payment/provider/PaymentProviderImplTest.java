@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {PaymentProviderImplTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {PaymentProviderImpl.class})
 class PaymentProviderImplTest {
 
     @Autowired
@@ -94,13 +94,6 @@ class PaymentProviderImplTest {
         assertNotNull(ref1);
         assertNotNull(ref2);
         assertNotEquals(ref1, ref2);
-    }
-
-    @Configuration
-    @Import(PaymentProviderImpl.class)
-    static class TestConfig {
-        // Minimal configuration - only imports the provider under test
-        // No mocks needed - pure unit test
     }
 }
 

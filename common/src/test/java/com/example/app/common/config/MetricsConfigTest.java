@@ -8,13 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {MetricsConfigTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {MetricsConfig.class})
 @TestPropertySource(properties = {
     "spring.actuator.metrics.export.enabled=true"
 })
@@ -52,12 +50,6 @@ class MetricsConfigTest {
         // Verify that the customizer can be applied without errors
         assertNotNull(registry);
         // The common tag "application" = "multi-module-app" should be configured
-    }
-
-    @Configuration
-    @Import(MetricsConfig.class)
-    static class TestConfig {
-        // Minimal configuration - only imports MetricsConfig
     }
 }
 

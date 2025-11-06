@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -22,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = {PaymentServiceImplTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {PaymentServiceImpl.class})
 class PaymentServiceImplTest {
 
     @MockBean
@@ -232,13 +230,6 @@ class PaymentServiceImplTest {
         assertEquals(status, result.getStatus());
 
         verify(paymentRepository).save(any(Payment.class));
-    }
-
-    @Configuration
-    @Import(PaymentServiceImpl.class)
-    static class TestConfig {
-        // Minimal configuration - only imports the service under test
-        // All dependencies are mocked via @MockBean
     }
 }
 

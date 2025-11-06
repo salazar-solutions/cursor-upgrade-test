@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = {AuthServiceImplTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {AuthServiceImpl.class})
 @TestPropertySource(properties = {
     "jwt.secret=test-secret-key-for-unit-testing-only",
     "jwt.expiration=86400000"
@@ -128,13 +128,6 @@ class AuthServiceImplTest {
         verify(passwordEncoder).matches("password123", "encodedPassword");
         verify(jwtUtil, never()).generateToken(any(), any());
         verify(userMapper, never()).toResponse(any());
-    }
-
-    @Configuration
-    @Import(AuthServiceImpl.class)
-    static class TestConfig {
-        // Minimal configuration - only imports the service under test
-        // All dependencies are mocked via @MockBean
     }
 }
 

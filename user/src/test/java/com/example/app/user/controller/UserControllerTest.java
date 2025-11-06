@@ -12,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -24,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = {UserControllerTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {UserController.class})
 class UserControllerTest {
 
     @MockBean
@@ -178,13 +176,6 @@ class UserControllerTest {
         assertNotNull(response.getBody().getUser());
 
         verify(authService).login(any(AuthRequest.class));
-    }
-
-    @Configuration
-    @Import(UserController.class)
-    static class TestConfig {
-        // Minimal configuration - only imports the controller under test
-        // All dependencies are mocked via @MockBean
     }
 }
 

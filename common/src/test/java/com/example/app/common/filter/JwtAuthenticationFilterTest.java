@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -23,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = {JwtAuthenticationFilterTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {JwtAuthenticationFilter.class})
 @TestPropertySource(properties = {
     "jwt.secret=test-secret-key-for-unit-testing-jwt-filter-must-be-at-least-512-bits-long-for-hs512-algorithm",
     "jwt.expiration=86400000"
@@ -154,13 +152,6 @@ class JwtAuthenticationFilterTest {
 
         // The filter will still call validateToken with empty string
         verify(jwtUtil).validateToken("");
-    }
-
-    @Configuration
-    @Import(JwtAuthenticationFilter.class)
-    static class TestConfig {
-        // Minimal configuration - only imports the filter under test
-        // JwtUtil is mocked via @MockBean
     }
 }
 

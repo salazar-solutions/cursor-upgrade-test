@@ -7,7 +7,8 @@ import com.example.app.order.entity.OrderLine;
 import com.example.app.order.entity.OrderStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -17,8 +18,10 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {OrderMapperImpl.class})
 class OrderMapperTest {
 
+    @Autowired
     private OrderMapper orderMapper;
 
     private Order order;
@@ -30,7 +33,6 @@ class OrderMapperTest {
 
     @BeforeEach
     void setUp() {
-        orderMapper = Mappers.getMapper(OrderMapper.class);
         orderId = UUID.randomUUID();
         userId = UUID.randomUUID();
         productId = UUID.randomUUID();

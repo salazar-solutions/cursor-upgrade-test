@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -21,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = {AdminUserControllerTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {AdminUserController.class})
 class AdminUserControllerTest {
 
     @MockBean
@@ -99,13 +97,6 @@ class AdminUserControllerTest {
         assertTrue(response.getBody().containsKey("userId"));
         assertEquals(userId.toString(), response.getBody().get("userId"));
         assertEquals("User disable functionality to be implemented", response.getBody().get("message"));
-    }
-
-    @Configuration
-    @Import(AdminUserController.class)
-    static class TestConfig {
-        // Minimal configuration - only imports the controller under test
-        // UserService is mocked via @MockBean
     }
 }
 

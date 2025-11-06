@@ -4,8 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -16,7 +14,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {CorrelationIdFilterTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {CorrelationIdFilter.class})
 class CorrelationIdFilterTest {
 
     @Autowired
@@ -116,12 +114,6 @@ class CorrelationIdFilterTest {
         assertNotNull(correlationId1);
         assertNotNull(correlationId2);
         assertNotEquals(correlationId1, correlationId2);
-    }
-
-    @Configuration
-    @Import(CorrelationIdFilter.class)
-    static class TestConfig {
-        // Minimal configuration - only imports the filter under test
     }
 }
 

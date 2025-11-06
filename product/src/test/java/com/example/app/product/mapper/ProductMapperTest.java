@@ -4,7 +4,8 @@ import com.example.app.product.dto.ProductResponse;
 import com.example.app.product.entity.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -12,8 +13,10 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {ProductMapperImpl.class})
 class ProductMapperTest {
 
+    @Autowired
     private ProductMapper productMapper;
 
     private Product product;
@@ -21,7 +24,6 @@ class ProductMapperTest {
 
     @BeforeEach
     void setUp() {
-        productMapper = Mappers.getMapper(ProductMapper.class);
         productId = UUID.randomUUID();
 
         product = new Product();

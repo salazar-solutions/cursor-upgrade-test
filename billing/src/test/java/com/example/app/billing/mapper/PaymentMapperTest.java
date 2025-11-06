@@ -5,7 +5,8 @@ import com.example.app.payment.entity.Payment;
 import com.example.app.payment.entity.PaymentStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -13,8 +14,10 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {PaymentMapperImpl.class})
 class PaymentMapperTest {
 
+    @Autowired
     private PaymentMapper paymentMapper;
 
     private Payment payment;
@@ -23,7 +26,6 @@ class PaymentMapperTest {
 
     @BeforeEach
     void setUp() {
-        paymentMapper = PaymentMapper.INSTANCE;
         paymentId = UUID.randomUUID();
         orderId = UUID.randomUUID();
 

@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -18,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = {AdminControllerTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {AdminController.class})
 class AdminControllerTest {
 
     @MockBean
@@ -105,13 +103,6 @@ class AdminControllerTest {
         assertTrue(response.getBody().containsKey("message"));
         assertTrue(response.getBody().containsKey("actuatorEndpoint"));
         assertEquals("/actuator/metrics", response.getBody().get("actuatorEndpoint"));
-    }
-
-    @Configuration
-    @Import(AdminController.class)
-    static class TestConfig {
-        // Minimal configuration - only imports the controller under test
-        // DataSource is mocked via @MockBean
     }
 }
 

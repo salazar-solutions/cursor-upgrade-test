@@ -4,15 +4,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {JwtUtilTest.TestConfig.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {JwtUtil.class})
 @TestPropertySource(properties = {
     "jwt.secret=test-secret-key-for-unit-testing-jwt-util-must-be-at-least-512-bits-long-for-hs512-algorithm",
     "jwt.expiration=86400000"
@@ -148,13 +146,6 @@ class JwtUtilTest {
         assertEquals(userId, extractedUserId);
         assertEquals(username, extractedUsername);
         assertTrue(isValid);
-    }
-
-    @Configuration
-    @Import(JwtUtil.class)
-    static class TestConfig {
-        // Minimal configuration - only imports JwtUtil
-        // Uses @TestPropertySource for JWT secret
     }
 }
 

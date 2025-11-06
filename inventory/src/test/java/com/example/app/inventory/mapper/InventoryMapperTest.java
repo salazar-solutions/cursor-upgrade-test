@@ -4,14 +4,17 @@ import com.example.app.inventory.dto.InventoryResponse;
 import com.example.app.inventory.entity.Inventory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {InventoryMapperImpl.class})
 class InventoryMapperTest {
 
+    @Autowired
     private InventoryMapper inventoryMapper;
 
     private Inventory inventory;
@@ -19,7 +22,6 @@ class InventoryMapperTest {
 
     @BeforeEach
     void setUp() {
-        inventoryMapper = InventoryMapper.INSTANCE;
         productId = UUID.randomUUID();
 
         inventory = new Inventory();
