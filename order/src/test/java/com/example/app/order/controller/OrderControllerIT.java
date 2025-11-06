@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Integration tests for OrderController.
+ * Integration tests for OrderController including end-to-end flow tests.
  * These tests use the local devdb database and should only run with the integration profile.
  * Ensure PostgreSQL is running and devdb database exists before running these tests.
  */
@@ -273,6 +273,55 @@ class OrderControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void testEndToEndOrderFlow() throws Exception {
+        // Clear entity manager first to avoid tracking stale entities
+        entityManager.clear();
+        
+        // Delete in order to respect foreign key constraints
+        // Use deleteAllInBatch which uses SQL DELETE and won't fail if no rows exist
+        inventoryRepository.deleteAllInBatch();
+        productRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
+
+        // Create user
+        User testUser = new User();
+        testUser.setUsername("testuser");
+        testUser.setEmail("test@example.com");
+        testUser.setPasswordHash("hashed");
+        User savedUser = userRepository.save(testUser);
+
+        // Create product
+        Product product = new Product();
+        product.setSku("SKU-001");
+        product.setName("Test Product");
+        product.setPrice(new BigDecimal("99.99"));
+        product.setAvailableQty(100);
+        Product savedProduct = productRepository.save(product);
+
+        // Create inventory
+        Inventory inventory = new Inventory();
+        inventory.setProductId(savedProduct.getId());
+        inventory.setAvailableQty(100);
+        inventory.setReservedQty(0);
+        inventoryRepository.save(inventory);
+
+        // Create order
+        OrderRequest orderRequest = new OrderRequest();
+        orderRequest.setUserId(savedUser.getId());
+        OrderLineRequest lineRequest = new OrderLineRequest();
+        lineRequest.setProductId(savedProduct.getId());
+        lineRequest.setQuantity(2);
+        orderRequest.setOrderLines(Collections.singletonList(lineRequest));
+
+        mockMvc.perform(post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(orderRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.userId").value(savedUser.getId().toString()))
+                .andExpect(jsonPath("$.status").value("PENDING"));
     }
 }
 
