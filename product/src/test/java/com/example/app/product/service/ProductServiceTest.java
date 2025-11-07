@@ -35,6 +35,9 @@ class ProductServiceTest {
     @Mock
     private ProductMapper productMapper;
 
+    @Mock
+    private InventoryInitializationService inventoryInitializationService;
+
     @InjectMocks
     private ProductServiceImpl productService;
 
@@ -65,11 +68,13 @@ class ProductServiceTest {
     void testCreateProduct_Success() {
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(productMapper.toResponse(product)).thenReturn(createProductResponse());
+        doNothing().when(inventoryInitializationService).ensureInventoryExists(any(UUID.class), anyInt());
 
         ProductResponse response = productService.createProduct(productRequest);
 
         assertNotNull(response);
         verify(productRepository).save(any(Product.class));
+        verify(inventoryInitializationService).ensureInventoryExists(any(UUID.class), anyInt());
     }
 
     @Test

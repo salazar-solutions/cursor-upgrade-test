@@ -1,6 +1,7 @@
 package com.example.app.user.service;
 
 import com.example.app.common.exception.BusinessException;
+import com.example.app.common.exception.DuplicateResourceException;
 import com.example.app.common.exception.EntityNotFoundException;
 import com.example.app.user.domain.UserRequest;
 import com.example.app.user.entity.Role;
@@ -78,7 +79,7 @@ class UserServiceTest {
     void testCreateUser_UsernameExists() {
         when(userRepository.existsByUsername("testuser")).thenReturn(true);
 
-        assertThrows(BusinessException.class, () -> userService.createUser(userRequest));
+        assertThrows(DuplicateResourceException.class, () -> userService.createUser(userRequest));
         verify(userRepository, never()).save(any(User.class));
     }
 
@@ -87,7 +88,7 @@ class UserServiceTest {
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
         when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
 
-        assertThrows(BusinessException.class, () -> userService.createUser(userRequest));
+        assertThrows(DuplicateResourceException.class, () -> userService.createUser(userRequest));
         verify(userRepository, never()).save(any(User.class));
     }
 

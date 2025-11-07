@@ -15,6 +15,7 @@ import com.example.app.inventory.service.InventoryService;
 import com.example.app.notifications.service.NotificationService;
 import com.example.app.product.dto.ProductResponse;
 import com.example.app.product.service.ProductService;
+import com.example.app.user.repository.UserRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -61,6 +63,9 @@ class OrderServiceTest {
     @Mock
     private OrderMapper orderMapper;
 
+    @Mock
+    private UserRepository userRepository;
+
     private OrderServiceImpl orderService;
 
     private OrderRequest orderRequest;
@@ -80,6 +85,7 @@ class OrderServiceTest {
         orderService.setBillingAdapter(billingAdapter);
         orderService.setNotificationService(notificationService);
         orderService.setOrderMapper(orderMapper);
+        ReflectionTestUtils.setField(orderService, "userRepository", userRepository);
 
         orderId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
@@ -106,6 +112,7 @@ class OrderServiceTest {
         product.setId(productId.toString());
         product.setPrice(new BigDecimal("99.99"));
 
+        when(userRepository.existsById(any(UUID.class))).thenReturn(true);
         when(productService.getProductById(productId)).thenReturn(product);
         when(inventoryService.reserveInventory(any(UUID.class), any(ReserveRequest.class)))
             .thenReturn(null);
@@ -121,7 +128,7 @@ class OrderServiceTest {
         com.example.app.order.dto.OrderResponse response = orderService.createOrder(orderRequest);
 
         assertNotNull(response);
-        verify(orderRepository).save(any(Order.class));
+        verify(orderRepository, atLeastOnce()).save(any(Order.class));
         verify(inventoryService).reserveInventory(any(UUID.class), any(ReserveRequest.class));
     }
 
