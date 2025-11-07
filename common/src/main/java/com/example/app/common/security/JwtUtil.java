@@ -2,7 +2,6 @@ package com.example.app.common.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -81,11 +80,11 @@ public class JwtUtil {
         Date expiryDate = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
-            .setSubject(userId.toString())
+            .subject(userId.toString())
             .claim("username", username)
-            .setIssuedAt(now)
-            .setExpiration(expiryDate)
-            .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+            .issuedAt(now)
+            .expiration(expiryDate)
+            .signWith(getSigningKey())
             .compact();
     }
 
@@ -100,11 +99,11 @@ public class JwtUtil {
      * @throws IllegalArgumentException if the subject cannot be parsed as a UUID
      */
     public UUID getUserIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-            .setSigningKey(getSigningKey())
+        Claims claims = Jwts.parser()
+            .verifyWith(getSigningKey())
             .build()
-            .parseClaimsJws(token)
-            .getBody();
+            .parseSignedClaims(token)
+            .getPayload();
         
         return UUID.fromString(claims.getSubject());
     }
@@ -119,11 +118,11 @@ public class JwtUtil {
      * @throws io.jsonwebtoken.JwtException if the token is invalid, expired, or malformed
      */
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-            .setSigningKey(getSigningKey())
+        Claims claims = Jwts.parser()
+            .verifyWith(getSigningKey())
             .build()
-            .parseClaimsJws(token)
-            .getBody();
+            .parseSignedClaims(token)
+            .getPayload();
         
         return claims.get("username", String.class);
     }
@@ -146,10 +145,10 @@ public class JwtUtil {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+            Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token);
+                .parseSignedClaims(token);
             return true;
         } catch (Exception e) {
             return false;

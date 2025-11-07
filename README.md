@@ -1,6 +1,21 @@
 # Multi-Module Spring Boot Application
 
-A comprehensive Maven multi-module Spring Boot 2.7.x application running on Java 8, implementing a complete e-commerce order management system.
+A comprehensive Maven multi-module Spring Boot 3.2.x application running on Java 21, implementing a complete e-commerce order management system.
+
+## Migration Status
+
+✅ **Successfully migrated from Java 8 to Java 21**
+
+- All modules compile successfully on Java 21
+- All test classes compile successfully
+- Spring Boot upgraded to 3.2.5
+- All dependencies upgraded to Java 21 compatible versions
+- Jakarta EE migration completed (javax.* → jakarta.*)
+
+For detailed migration information, see:
+- [Migration Checklist](migration-checklist.md)
+- [Compatibility Report](compatibility-report.md)
+- [Executive Summary](executive-summary.md)
 
 ## Project Structure
 
@@ -17,10 +32,17 @@ The application consists of 8 modules:
 
 ## Prerequisites
 
-- Java 8 (JDK 1.8)
+- **Java 21 (JDK 21)** - OpenJDK 21 or Oracle JDK 21 (LTS)
 - Maven 3.6+
 - PostgreSQL 13+ (for local development)
 - Docker (optional, for Testcontainers in integration tests)
+
+### Java Version Verification
+
+```bash
+java -version
+# Should show: openjdk version "21" or java version "21"
+```
 
 ## Database Setup
 
@@ -124,8 +146,8 @@ Tests run with the `test` profile which:
 ## API Documentation
 
 Once the application is running, access:
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- API Docs: http://localhost:8080/api-docs
+- Swagger UI: http://localhost:8080/swagger-ui/index.html (Note: URL changed in Spring Boot 3.x)
+- API Docs: http://localhost:8080/v3/api-docs
 
 ## Example API Calls
 
@@ -205,14 +227,16 @@ See individual module directories for details.
 
 ## Technologies
 
-- Spring Boot 2.7.18
+- **Java 21** (LTS) - Latest long-term support version
+- **Spring Boot 3.2.5** - Modern Spring Boot framework
 - Spring Data JPA
-- Spring Security
-- MapStruct (for object mapping)
+- Spring Security 6.x
+- MapStruct 1.6.2 (for object mapping)
 - Micrometer (metrics)
-- Testcontainers (integration tests)
+- Testcontainers 1.19.8 (integration tests)
 - PostgreSQL
-- JWT (JJWT)
+- JWT (JJWT 0.12.6)
+- Springdoc OpenAPI 2.5.0 (API documentation)
 
 ## Package Structure
 
@@ -236,9 +260,10 @@ See individual module directories for details.
 
 ### Build Issues
 
-- Ensure Java 8 is installed: `java -version`
+- Ensure Java 21 is installed: `java -version` (should show version 21)
 - Clear Maven cache: `mvn clean`
 - Check for dependency conflicts: `mvn dependency:tree`
+- If using Java 8, upgrade to Java 21 (see migration documentation)
 
 ### Test Failures
 

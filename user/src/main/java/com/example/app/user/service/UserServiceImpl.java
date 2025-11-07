@@ -90,14 +90,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponse getUserById(UUID id) {
-        User user = userRepository.findById(id)
+        var user = userRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
         return userMapper.toResponse(user);
     }
 
     @Override
     public UserResponse updateUser(UUID id, UserRequest request) {
-        User user = userRepository.findById(id)
+        var user = userRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
 
         if (!user.getUsername().equals(request.getUsername()) && 
@@ -113,7 +113,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         
-        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
 

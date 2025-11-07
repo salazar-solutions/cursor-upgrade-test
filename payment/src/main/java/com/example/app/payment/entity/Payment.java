@@ -1,6 +1,6 @@
 package com.example.app.payment.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;

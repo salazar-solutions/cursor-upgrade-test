@@ -2,7 +2,7 @@ package com.example.app.order.domain;
 
 import com.example.app.order.entity.OrderStatus;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Request model for changing order status.

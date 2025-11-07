@@ -1,6 +1,6 @@
 package com.example.app.inventory.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.UUID;
 
 /**

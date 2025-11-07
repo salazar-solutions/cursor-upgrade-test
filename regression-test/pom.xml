@@ -16,8 +16,8 @@
     <description>Regression test suite using Cucumber, Rest Assured, and Citrus</description>
 
     <properties>
-        <cucumber.version>7.14.0</cucumber.version>
-        <rest-assured.version>5.3.2</rest-assured.version>
+        <cucumber.version>7.18.0</cucumber.version>
+        <rest-assured.version>5.4.0</rest-assured.version>
         <citrus.version>4.0.0</citrus.version>
         <gson.version>2.10.1</gson.version>
     </properties>

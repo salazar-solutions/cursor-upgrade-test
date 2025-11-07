@@ -1,6 +1,6 @@
 package com.example.app.notifications.domain;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Request model for sending a notification.

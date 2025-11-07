@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
 
 /**
@@ -117,23 +117,25 @@ public class SecurityConfig {
             // Development mode - no security
             log.warn("⚠️ SECURITY DISABLED - Development mode active");
             http
-                    .csrf().disable()
-                    .authorizeRequests()
-                    .anyRequest().permitAll()
-                    .and()
-                    .sessionManagement()
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                    .csrf(csrf -> csrf.disable())
+                    .authorizeHttpRequests(auth -> auth
+                            .anyRequest().permitAll()
+                    )
+                    .sessionManagement(session -> session
+                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    );
         } else {
             // Production mode - JWT security
             log.info("🔒 SECURITY ENABLED - JWT authentication active");
             http
-                    .csrf().disable()
-                    .authorizeRequests()
-                    .antMatchers("/api/auth/**", "/api/public/**").permitAll()
-                    .anyRequest().authenticated()
-                    .and()
-                    .sessionManagement()
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                    .csrf(csrf -> csrf.disable())
+                    .authorizeHttpRequests(auth -> auth
+                            .requestMatchers("/api/auth/**", "/api/public/**").permitAll()
+                            .anyRequest().authenticated()
+                    )
+                    .sessionManagement(session -> session
+                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    );
 
             if (jwtAuthFilter != null) {
                 log.info("JWT Authentication Filter added to security chain");
