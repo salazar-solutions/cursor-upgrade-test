@@ -2,12 +2,15 @@ package com.example.app.product.service;
 
 import com.example.app.common.dto.PagedResponse;
 import com.example.app.common.exception.BusinessException;
+import com.example.app.common.exception.DuplicateResourceException;
 import com.example.app.common.exception.EntityNotFoundException;
 import com.example.app.product.domain.ProductRequest;
 import com.example.app.product.dto.ProductResponse;
 import com.example.app.product.entity.Product;
 import com.example.app.product.mapper.ProductMapper;
 import com.example.app.product.repository.ProductRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -44,13 +47,20 @@ public class ProductServiceImpl implements ProductService {
     
     @Autowired
     private ProductMapper productMapper;
+    
+    @Autowired
+    private InventoryInitializationService inventoryInitializationService;
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
+        Product savedProduct;
+        
+        // Check if product already exists
         if (productRepository.existsBySku(request.getSku())) {
-            throw new BusinessException("SKU already exists");
+            throw new DuplicateResourceException("SKU already exists");
         }
 
+        // Create new product
         Product product = new Product();
         product.setSku(request.getSku());
         product.setName(request.getName());
@@ -58,7 +68,12 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(request.getPrice());
         product.setAvailableQty(request.getAvailableQty());
 
-        Product savedProduct = productRepository.save(product);
+        savedProduct = productRepository.save(product);
+        
+        // Automatically create inventory record for the product (in separate transaction)
+        // This ensures the product is immediately available for ordering
+        inventoryInitializationService.ensureInventoryExists(savedProduct.getId(), savedProduct.getAvailableQty());
+        
         return productMapper.toResponse(savedProduct);
     }
 

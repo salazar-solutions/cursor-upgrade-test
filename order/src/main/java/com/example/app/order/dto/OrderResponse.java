@@ -13,6 +13,7 @@ public class OrderResponse {
     private String userId;
     private BigDecimal totalAmount;
     private OrderStatus status;
+    private String paymentId;
     private List<OrderLineResponse> orderLines;
     private Instant createdAt;
     private Instant updatedAt;
@@ -47,6 +48,14 @@ public class OrderResponse {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
     }
 
     public List<OrderLineResponse> getOrderLines() {

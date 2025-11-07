@@ -5,20 +5,17 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.restassured.response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for order management flows.
  */
-@Component
 public class OrderStepDefinitions {
 
     @Autowired
@@ -26,10 +23,27 @@ public class OrderStepDefinitions {
 
     @Given("an order for user ID {string} with product ID {string} and quantity {int}")
     public void anOrderForUserIdWithProductIdAndQuantity(String userId, String productId, int quantity) {
-        String actualUserId = userId.startsWith("$") ? 
-            baseSteps.getFromContext(userId.substring(1)).toString() : userId;
-        String actualProductId = productId.startsWith("$") ? 
-            baseSteps.getFromContext(productId.substring(1)).toString() : productId;
+        String actualUserId;
+        if (userId.startsWith("$")) {
+            Object contextValue = baseSteps.getFromContext(userId.substring(1));
+            if (contextValue == null) {
+                throw new IllegalStateException("Context variable " + userId.substring(1) + " is not set. Make sure user/product was created successfully.");
+            }
+            actualUserId = contextValue.toString();
+        } else {
+            actualUserId = userId;
+        }
+        
+        String actualProductId;
+        if (productId.startsWith("$")) {
+            Object contextValue = baseSteps.getFromContext(productId.substring(1));
+            if (contextValue == null) {
+                throw new IllegalStateException("Context variable " + productId.substring(1) + " is not set. Make sure product was created successfully.");
+            }
+            actualProductId = contextValue.toString();
+        } else {
+            actualProductId = productId;
+        }
         
         Map<String, Object> orderLine = new HashMap<>();
         orderLine.put("productId", actualProductId);
@@ -53,6 +67,14 @@ public class OrderStepDefinitions {
                 .when()
                 .post("/orders");
         baseSteps.setLastResponse(response);
+        
+        // Store order ID if creation was successful
+        if (response.getStatusCode() == 201) {
+            String orderId = response.jsonPath().getString("id");
+            if (orderId != null) {
+                baseSteps.storeInContext("createdOrderId", orderId);
+            }
+        }
     }
 
     @When("I get the order by ID {string}")
@@ -205,7 +227,8 @@ public class OrderStepDefinitions {
                     .when()
                     .get("/inventory/" + productId);
             assertThat(inventoryResponse.getStatusCode()).isEqualTo(200);
-            int reservedQty = inventoryResponse.jsonPath().getInt("reservedQuantity");
+            Integer reservedQty = inventoryResponse.jsonPath().getInt("reservedQty");
+            assertThat(reservedQty).isNotNull();
             assertThat(reservedQty).isGreaterThan(0);
         }
     }

@@ -57,12 +57,14 @@ CREATE TABLE IF NOT EXISTS orders (
     user_id UUID NOT NULL,
     total_amount DECIMAL(19,2) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    payment_id UUID,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_order_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_order_status ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_order_payment_id ON orders(payment_id);
 
 -- Order lines table
 CREATE TABLE IF NOT EXISTS order_lines (

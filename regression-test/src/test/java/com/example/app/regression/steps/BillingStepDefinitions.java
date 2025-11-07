@@ -5,7 +5,6 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.restassured.response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Step definitions for billing and payment flows.
  */
-@Component
 public class BillingStepDefinitions {
 
     @Autowired
@@ -23,8 +21,16 @@ public class BillingStepDefinitions {
 
     @Given("a payment request for order ID {string} with amount {double} and payment method {string}")
     public void aPaymentRequestForOrderIdWithAmountAndPaymentMethod(String orderId, Double amount, String paymentMethod) {
-        String actualOrderId = orderId.startsWith("$") ? 
-            baseSteps.getFromContext(orderId.substring(1)).toString() : orderId;
+        String actualOrderId;
+        if (orderId.startsWith("$")) {
+            Object contextValue = baseSteps.getFromContext(orderId.substring(1));
+            if (contextValue == null) {
+                throw new IllegalStateException("Context variable " + orderId.substring(1) + " is not set");
+            }
+            actualOrderId = contextValue.toString();
+        } else {
+            actualOrderId = orderId;
+        }
         
         Map<String, Object> paymentRequest = new HashMap<>();
         paymentRequest.put("orderId", actualOrderId);

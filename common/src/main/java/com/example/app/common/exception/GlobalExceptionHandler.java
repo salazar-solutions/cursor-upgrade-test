@@ -65,6 +65,25 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles {@link DuplicateResourceException} when attempting to create a resource that already exists.
+     * 
+     * @param ex the exception containing the error message
+     * @param request the web request that triggered the exception
+     * @return ResponseEntity with HTTP 409 (Conflict) status and ApiError body
+     */
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiError> handleDuplicateResource(DuplicateResourceException ex, WebRequest request) {
+        logger.warn("Duplicate resource: {}", ex.getMessage());
+        ApiError error = new ApiError(
+            HttpStatus.CONFLICT.value(),
+            "Conflict",
+            ex.getMessage(),
+            getPath(request)
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    /**
      * Handles {@link BusinessException} for business logic violations.
      * 
      * <p>This includes exceptions like insufficient stock, invalid state transitions,

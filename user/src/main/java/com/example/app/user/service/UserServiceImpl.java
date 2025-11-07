@@ -2,6 +2,7 @@ package com.example.app.user.service;
 
 import com.example.app.common.dto.PagedResponse;
 import com.example.app.common.exception.BusinessException;
+import com.example.app.common.exception.DuplicateResourceException;
 import com.example.app.common.exception.EntityNotFoundException;
 import com.example.app.user.domain.UserRequest;
 import com.example.app.user.dto.UserResponse;
@@ -58,11 +59,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse createUser(UserRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new BusinessException("Username already exists");
+            throw new DuplicateResourceException("Username already exists");
         }
         
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("Email already exists");
+            throw new DuplicateResourceException("Email already exists");
         }
 
         User user = new User();
@@ -104,13 +105,13 @@ public class UserServiceImpl implements UserService {
         if (!Objects.equals(user.getUsername(), request.getUsername()) && 
             request.getUsername() != null &&
             userRepository.existsByUsername(request.getUsername())) {
-            throw new BusinessException("Username already exists");
+            throw new DuplicateResourceException("Username already exists");
         }
 
         if (!Objects.equals(user.getEmail(), request.getEmail()) && 
             request.getEmail() != null &&
             userRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("Email already exists");
+            throw new DuplicateResourceException("Email already exists");
         }
 
         user.setUsername(request.getUsername());

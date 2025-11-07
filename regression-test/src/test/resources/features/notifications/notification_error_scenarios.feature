@@ -22,5 +22,5 @@ Feature: Notification Error Scenarios
   Scenario: Send notification with invalid type
     Given a notification request for user ID "$createdUserId" with type "INVALID_TYPE" and message "Test message"
     When I send the notification
-    Then the response status code is 400
+    Then the response status code is 422
 

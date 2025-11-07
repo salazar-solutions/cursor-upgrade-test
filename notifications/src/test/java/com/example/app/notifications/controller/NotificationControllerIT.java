@@ -1,16 +1,22 @@
 package com.example.app.notifications.controller;
 
 import com.example.app.notifications.domain.NotificationRequest;
+import com.example.app.user.entity.User;
+import com.example.app.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,10 +39,41 @@ class NotificationControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    private UUID testUserId;
+    private UUID testUserId2;
+
+    @BeforeEach
+    void setUp() {
+        // Clean up
+        userRepository.deleteAll();
+
+        // Create test users with unique names to avoid conflicts
+        long timestamp = System.currentTimeMillis();
+        User user1 = new User();
+        user1.setUsername("testuser1_" + timestamp);
+        user1.setEmail("testuser1_" + timestamp + "@example.com");
+        user1.setPasswordHash(passwordEncoder.encode("password"));
+        User savedUser1 = userRepository.save(user1);
+        testUserId = savedUser1.getId();
+
+        User user2 = new User();
+        user2.setUsername("testuser2_" + timestamp);
+        user2.setEmail("testuser2_" + timestamp + "@example.com");
+        user2.setPasswordHash(passwordEncoder.encode("password"));
+        User savedUser2 = userRepository.save(user2);
+        testUserId2 = savedUser2.getId();
+    }
+
     @Test
     void testSendNotification_Success() throws Exception {
         NotificationRequest request = new NotificationRequest();
-        request.setUserId("user-123");
+        request.setUserId(testUserId.toString());
         request.setMessage("Your order has been created successfully");
         request.setType("ORDER_CREATED");
 
@@ -63,7 +100,7 @@ class NotificationControllerIT {
     void testSendNotification_DifferentTypes() throws Exception {
         // Test ORDER_CREATED
         NotificationRequest request1 = new NotificationRequest();
-        request1.setUserId("user-123");
+        request1.setUserId(testUserId.toString());
         request1.setMessage("Order created");
         request1.setType("ORDER_CREATED");
         mockMvc.perform(post("/api/v1/notifications/send")
@@ -73,7 +110,7 @@ class NotificationControllerIT {
 
         // Test ORDER_SHIPPED
         NotificationRequest request2 = new NotificationRequest();
-        request2.setUserId("user-456");
+        request2.setUserId(testUserId2.toString());
         request2.setMessage("Order shipped");
         request2.setType("ORDER_SHIPPED");
         mockMvc.perform(post("/api/v1/notifications/send")
@@ -85,7 +122,7 @@ class NotificationControllerIT {
     @Test
     void testSendNotification_EmptyMessage() throws Exception {
         NotificationRequest request = new NotificationRequest();
-        request.setUserId("user-123");
+        request.setUserId(testUserId.toString());
         request.setMessage(""); // Empty message
         request.setType("ORDER_CREATED");
 
@@ -98,7 +135,7 @@ class NotificationControllerIT {
     @Test
     void testSendNotification_EmptyType() throws Exception {
         NotificationRequest request = new NotificationRequest();
-        request.setUserId("user-123");
+        request.setUserId(testUserId.toString());
         request.setMessage("Test message");
         request.setType(""); // Empty type
 

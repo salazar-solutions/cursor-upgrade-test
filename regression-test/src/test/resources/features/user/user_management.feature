@@ -23,7 +23,7 @@ Feature: User Management
   Scenario: Update user
     Given a user with username "testuser3" and email "testuser3@example.com" and password "password123"
     When I create the user
-    And I update the user with ID "$createdUserId" with email "updated@example.com"
+    And I update the user with ID "$createdUserId" with email "$uniqueEmail"
     Then the response status code is 200
     And the user response contains username "testuser3"
 

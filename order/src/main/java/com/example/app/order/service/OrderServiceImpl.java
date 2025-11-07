@@ -3,6 +3,7 @@ package com.example.app.order.service;
 import com.example.app.common.dto.PagedResponse;
 import com.example.app.common.exception.BusinessException;
 import com.example.app.common.exception.EntityNotFoundException;
+import com.example.app.inventory.domain.ReleaseRequest;
 import com.example.app.inventory.domain.ReserveRequest;
 import com.example.app.inventory.dto.InventoryResponse;
 import com.example.app.inventory.service.InventoryService;
@@ -24,6 +25,7 @@ import com.example.app.order.repository.OrderRepository;
 import com.example.app.order.repository.OrderStatusHistoryRepository;
 import com.example.app.product.dto.ProductResponse;
 import com.example.app.product.service.ProductService;
+import com.example.app.user.repository.UserRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +99,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderMapper orderMapper;
     
+    @Autowired
+    private UserRepository userRepository;
+    
     private final Counter ordersCreatedCounter;
 
     @Autowired
@@ -159,6 +164,11 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public OrderResponse createOrder(OrderRequest request) {
+        // Validate user exists
+        if (!userRepository.existsById(request.getUserId())) {
+            throw new EntityNotFoundException("User not found with id: " + request.getUserId());
+        }
+        
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<OrderLine> orderLines = new ArrayList<>();
 
@@ -191,6 +201,8 @@ public class OrderServiceImpl implements OrderService {
 
         // Create payment record via BillingAdapter
         UUID paymentId = billingAdapter.createPayment(savedOrder.getId(), totalAmount);
+        savedOrder.setPaymentId(paymentId);
+        savedOrder = orderRepository.save(savedOrder);
 
         // Create order lines
         for (OrderLine orderLine : orderLines) {
@@ -308,6 +320,23 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(
                 String.format("Invalid status transition from %s to %s", currentStatus, newStatus)
             );
+        }
+
+        // If status is changing to CANCELLED, release inventory
+        if (newStatus == OrderStatus.CANCELLED && currentStatus != OrderStatus.CANCELLED) {
+            List<OrderLine> orderLines = orderLineRepository.findByOrderId(orderId);
+            for (OrderLine orderLine : orderLines) {
+                try {
+                    ReleaseRequest releaseRequest = new ReleaseRequest();
+                    releaseRequest.setQuantity(orderLine.getQuantity());
+                    inventoryService.releaseInventory(orderLine.getProductId(), releaseRequest);
+                } catch (Exception e) {
+                    // Log error but don't fail the status change
+                    // In production, this might trigger a compensation transaction or alert
+                    System.err.println("Failed to release inventory for product " + 
+                        orderLine.getProductId() + ": " + e.getMessage());
+                }
+            }
         }
 
         // Record status history

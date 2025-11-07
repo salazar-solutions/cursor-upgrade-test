@@ -4,14 +4,12 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.restassured.response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for admin operations.
  */
-@Component
 public class AdminStepDefinitions {
 
     @Autowired

@@ -5,18 +5,15 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.restassured.response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for inventory management flows.
  */
-@Component
 public class InventoryStepDefinitions {
 
     @Autowired
@@ -66,14 +63,14 @@ public class InventoryStepDefinitions {
     public void theInventoryResponseContainsAvailableQuantity() {
         Response response = baseSteps.getLastResponse();
         assertThat(response.getStatusCode()).isEqualTo(200);
-        assertThat(response.jsonPath().getInt("availableQuantity")).isGreaterThanOrEqualTo(0);
+        assertThat(response.jsonPath().getInt("availableQty")).isGreaterThanOrEqualTo(0);
     }
 
     @Then("the inventory reservation is successful")
     public void theInventoryReservationIsSuccessful() {
         Response response = baseSteps.getLastResponse();
         assertThat(response.getStatusCode()).isEqualTo(200);
-        assertThat(response.jsonPath().getInt("reservedQuantity")).isGreaterThanOrEqualTo(0);
+        assertThat(response.jsonPath().getInt("reservedQty")).isGreaterThanOrEqualTo(0);
     }
 
     @Then("the inventory release is successful")
@@ -85,21 +82,28 @@ public class InventoryStepDefinitions {
     @Given("the available quantity is stored as {string}")
     public void theAvailableQuantityIsStoredAs(String key) {
         Response response = baseSteps.getLastResponse();
-        int availableQty = response.jsonPath().getInt("availableQuantity");
+        int availableQty = response.jsonPath().getInt("availableQty");
         baseSteps.storeInContext(key, availableQty);
     }
 
     @Given("the initial reserved quantity is stored as {string}")
     public void theInitialReservedQuantityIsStoredAs(String key) {
         Response response = baseSteps.getLastResponse();
-        int reservedQty = response.jsonPath().getInt("reservedQuantity");
+        int reservedQty = response.jsonPath().getInt("reservedQty");
         baseSteps.storeInContext(key, reservedQty);
+    }
+
+    @Given("the initial available quantity is stored as {string}")
+    public void theInitialAvailableQuantityIsStoredAs(String key) {
+        Response response = baseSteps.getLastResponse();
+        int availableQty = response.jsonPath().getInt("availableQty");
+        baseSteps.storeInContext(key, availableQty);
     }
 
     @Then("the available quantity decreased by {int}")
     public void theAvailableQuantityDecreasedBy(int decreaseAmount) {
         Response response = baseSteps.getLastResponse();
-        int currentAvailable = response.jsonPath().getInt("availableQuantity");
+        int currentAvailable = response.jsonPath().getInt("availableQty");
         Integer initialAvailable = baseSteps.getFromContext("initialAvailableQty");
         assertThat(initialAvailable - currentAvailable).isEqualTo(decreaseAmount);
     }
@@ -107,7 +111,7 @@ public class InventoryStepDefinitions {
     @Then("the reserved quantity increased by {int}")
     public void theReservedQuantityIncreasedBy(int increaseAmount) {
         Response response = baseSteps.getLastResponse();
-        int currentReserved = response.jsonPath().getInt("reservedQuantity");
+        int currentReserved = response.jsonPath().getInt("reservedQty");
         Integer initialReserved = baseSteps.getFromContext("initialReservedQty");
         assertThat(currentReserved - initialReserved).isEqualTo(increaseAmount);
     }
@@ -115,14 +119,14 @@ public class InventoryStepDefinitions {
     @Given("the reserved quantity after order is stored as {string}")
     public void theReservedQuantityAfterOrderIsStoredAs(String key) {
         Response response = baseSteps.getLastResponse();
-        int reservedQty = response.jsonPath().getInt("reservedQuantity");
+        int reservedQty = response.jsonPath().getInt("reservedQty");
         baseSteps.storeInContext(key, reservedQty);
     }
 
     @Then("the reserved quantity decreased after cancellation")
     public void theReservedQuantityDecreasedAfterCancellation() {
         Response response = baseSteps.getLastResponse();
-        int currentReserved = response.jsonPath().getInt("reservedQuantity");
+        int currentReserved = response.jsonPath().getInt("reservedQty");
         Integer reservedAfterOrder = baseSteps.getFromContext("reservedAfterOrder");
         assertThat(currentReserved).isLessThan(reservedAfterOrder);
     }
@@ -130,9 +134,9 @@ public class InventoryStepDefinitions {
     @Then("the available quantity increased after cancellation")
     public void theAvailableQuantityIncreasedAfterCancellation() {
         Response response = baseSteps.getLastResponse();
-        int currentAvailable = response.jsonPath().getInt("availableQuantity");
-        Integer initialAvailable = baseSteps.getFromContext("initialAvailableQty");
-        assertThat(currentAvailable).isGreaterThan(initialAvailable);
+        int currentAvailable = response.jsonPath().getInt("availableQty");
+        Integer availableAfterOrder = baseSteps.getFromContext("availableAfterOrder");
+        assertThat(currentAvailable).isGreaterThan(availableAfterOrder);
     }
 
     @Given("a reserve request with quantity {int} for product ID {string}")

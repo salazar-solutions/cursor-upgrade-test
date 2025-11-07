@@ -1,10 +1,16 @@
 package com.example.app.notifications.service;
 
+import com.example.app.common.exception.BusinessException;
+import com.example.app.common.exception.EntityNotFoundException;
 import com.example.app.notifications.domain.NotificationRequest;
+import com.example.app.notifications.entity.NotificationType;
+import com.example.app.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -36,9 +42,30 @@ public class InMemoryNotificationServiceImpl implements NotificationService {
     private static final Logger logger = LoggerFactory.getLogger(InMemoryNotificationServiceImpl.class);
     
     private final ConcurrentLinkedQueue<NotificationRequest> fallbackQueue = new ConcurrentLinkedQueue<>();
+    
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public void sendNotification(NotificationRequest request) {
+        // Validate user exists
+        UUID userId;
+        try {
+            userId = UUID.fromString(request.getUserId());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException("Invalid user ID format");
+        }
+        
+        if (!userRepository.existsById(userId)) {
+            throw new EntityNotFoundException("User not found with id: " + userId);
+        }
+        
+        // Validate notification type
+        try {
+            NotificationType.valueOf(request.getType());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException("Invalid notification type: " + request.getType());
+        }
         try {
             // Simulate sending notification (in production, this would call external service)
             logger.info("Sending notification to user {}: {} [{}]", 

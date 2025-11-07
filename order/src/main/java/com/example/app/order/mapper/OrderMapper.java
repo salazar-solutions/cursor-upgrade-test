@@ -19,6 +19,7 @@ public interface OrderMapper {
     
     @Mapping(target = "id", expression = "java(order.getId().toString())")
     @Mapping(target = "userId", expression = "java(order.getUserId().toString())")
+    @Mapping(target = "paymentId", expression = "java(order.getPaymentId() != null ? order.getPaymentId().toString() : null)")
     @Mapping(target = "createdAt", expression = "java(com.example.app.common.util.DateMapper.toInstant(order.getCreatedAt()))")
     @Mapping(target = "updatedAt", expression = "java(com.example.app.common.util.DateMapper.toInstant(order.getUpdatedAt()))")
     @Mapping(target = "orderLines", ignore = true)

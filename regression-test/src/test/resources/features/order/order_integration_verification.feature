@@ -8,8 +8,10 @@ Feature: Order Integration Verification
     Given the API is available
     And a user with username "integrationuser" and email "integration@example.com" and password "password123"
     And I create the user
+    And the user is created successfully
     And a product with SKU "INTEG-001" and name "Integration Product" and description "Integration test" and price 75.00
     And I create the product
+    And the product is created successfully
     And I get inventory for product ID "$createdProductId"
     And the initial available quantity is stored as "initialAvailableQty"
     And the initial reserved quantity is stored as "initialReservedQty"
@@ -35,6 +37,7 @@ Feature: Order Integration Verification
     Given an order for user ID "$createdUserId" with product ID "$createdProductId" and quantity 4
     When I create the order
     And I get inventory for product ID "$createdProductId"
+    And the available quantity is stored as "availableAfterOrder"
     And the reserved quantity after order is stored as "reservedAfterOrder"
     When I change order status to "CANCELLED" for order ID "$createdOrderId"
     Then the response status code is 200

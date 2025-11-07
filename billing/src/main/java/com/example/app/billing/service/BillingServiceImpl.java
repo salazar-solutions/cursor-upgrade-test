@@ -1,8 +1,10 @@
 package com.example.app.billing.service;
 
+import com.example.app.billing.adapter.OrderAdapter;
 import com.example.app.billing.domain.PaymentRequest;
 import com.example.app.billing.dto.PaymentResponse;
 import com.example.app.billing.mapper.PaymentMapper;
+import com.example.app.common.exception.EntityNotFoundException;
 import com.example.app.payment.entity.Payment;
 import com.example.app.payment.service.PaymentService;
 import io.micrometer.core.instrument.Counter;
@@ -37,6 +39,9 @@ public class BillingServiceImpl implements BillingService {
     @Autowired
     private PaymentMapper paymentMapper;
     
+    @Autowired(required = false)
+    private OrderAdapter orderAdapter;
+    
     private final Counter paymentsAttemptedCounter;
 
     @Autowired
@@ -64,6 +69,11 @@ public class BillingServiceImpl implements BillingService {
      */
     @Override
     public PaymentResponse createPayment(PaymentRequest request) {
+        // Validate that the order exists (if adapter is available)
+        if (orderAdapter != null && !orderAdapter.orderExists(request.getOrderId())) {
+            throw new EntityNotFoundException("Order not found with id: " + request.getOrderId());
+        }
+        
         paymentsAttemptedCounter.increment();
         
         // Use PaymentService from payment module to process payment

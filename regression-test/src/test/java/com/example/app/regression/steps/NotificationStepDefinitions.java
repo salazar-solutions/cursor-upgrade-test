@@ -5,7 +5,6 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.restassured.response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Step definitions for notification flows.
  */
-@Component
 public class NotificationStepDefinitions {
 
     @Autowired

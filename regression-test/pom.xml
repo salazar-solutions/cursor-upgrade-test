@@ -147,23 +147,125 @@
             <artifactId>citrus-core</artifactId>
             <version>${citrus.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- Exclude citrus-validation-groovy which brings in old Groovy 3.0.19 -->
+                <exclusion>
+                    <groupId>org.citrusframework</groupId>
+                    <artifactId>citrus-validation-groovy</artifactId>
+                </exclusion>
+                <!-- Exclude citrus-cucumber to avoid ObjectFactory conflict -->
+                <exclusion>
+                    <groupId>org.citrusframework</groupId>
+                    <artifactId>citrus-cucumber</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-jsr223</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.citrusframework</groupId>
             <artifactId>citrus-http</artifactId>
             <version>${citrus.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- Exclude citrus-cucumber to avoid ObjectFactory conflict -->
+                <exclusion>
+                    <groupId>org.citrusframework</groupId>
+                    <artifactId>citrus-cucumber</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.citrusframework</groupId>
             <artifactId>citrus-junit5</artifactId>
             <version>${citrus.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- Exclude citrus-cucumber to avoid ObjectFactory conflict -->
+                <exclusion>
+                    <groupId>org.citrusframework</groupId>
+                    <artifactId>citrus-cucumber</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.citrusframework</groupId>
             <artifactId>citrus-spring</artifactId>
             <version>${citrus.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <!-- Exclude citrus-cucumber to avoid ObjectFactory conflict -->
+                <exclusion>
+                    <groupId>org.citrusframework</groupId>
+                    <artifactId>citrus-cucumber</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-json</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Explicit Groovy 4.0.21 to align with Spring Boot 3.2.5 -->
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-xml</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-json</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -206,10 +308,43 @@
 
     <build>
         <plugins>
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-compiler-plugin</artifactId>-->
+            <!--                <executions>-->
+            <!--                    &lt;!&ndash; Force compilation before tests &ndash;&gt;-->
+            <!--                    <execution>-->
+            <!--                        <id>compile</id>-->
+            <!--                        <phase>compile</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>compile</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                    <execution>-->
+            <!--                        <id>test-compile</id>-->
+            <!--                        <phase>test-compile</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>testCompile</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--                <configuration>-->
+            <!--                    <source>21</source>-->
+            <!--                    <target>21</target>-->
+            <!--                    <parameters>true</parameters>-->
+            <!--                    <annotationProcessorPaths>-->
+            <!--                        <path>-->
+            <!--                            <groupId>org.mapstruct</groupId>-->
+            <!--                            <artifactId>mapstruct-processor</artifactId>-->
+            <!--                            <version>${mapstruct.version}</version>-->
+            <!--                        </path>-->
+            <!--                    </annotationProcessorPaths>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.5</version>
                 <configuration>
                     <includes>
                         <include>**/CucumberRegressionTest.java</include>
@@ -217,6 +352,9 @@
                     <systemPropertyVariables>
                         <spring.profiles.active>${spring.profiles.active}</spring.profiles.active>
                     </systemPropertyVariables>
+                    <!--Problem while running from root it should be solve with installed dependencies-->
+                    <parallel>none</parallel>
+                    <forkCount>1</forkCount>
                 </configuration>
             </plugin>
         </plugins>

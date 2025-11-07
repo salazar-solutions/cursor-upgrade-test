@@ -8,6 +8,7 @@ Feature: Billing Error Scenarios
     Given the API is available
     And a user with username "billingerroruser" and email "billingerror@example.com" and password "password123"
     And I create the user
+    And the user is created successfully
 
   Scenario: Get non-existent payment
     When I get the payment by ID "00000000-0000-0000-0000-000000000000"

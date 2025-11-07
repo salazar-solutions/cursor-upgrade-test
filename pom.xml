@@ -38,13 +38,14 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        
+
         <!-- Dependency versions -->
         <spring-boot.version>3.2.5</spring-boot.version>
         <mapstruct.version>1.6.2</mapstruct.version>
         <testcontainers.version>1.19.8</testcontainers.version>
         <springdoc.version>2.5.0</springdoc.version>
         <jacoco.version>0.8.12</jacoco.version>
+        <groovy.version>4.0.21</groovy.version>
     </properties>
 
     <dependencyManagement>
@@ -57,19 +58,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            
+
             <!-- MapStruct -->
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.mapstruct</groupId>
-                <artifactId>mapstruct-processor</artifactId>
-                <version>${mapstruct.version}</version>
-            </dependency>
-            
+
             <!-- Testcontainers -->
             <dependency>
                 <groupId>org.testcontainers</groupId>
@@ -78,12 +74,29 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            
+
             <!-- Springdoc OpenAPI -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- Groovy - Aligned with Spring Boot 3.2.5 -->
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy-xml</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy-json</artifactId>
+                <version>${groovy.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -95,9 +108,31 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.13.0</version>
+                    <executions>
+                        <!-- Force compilation before tests -->
+                        <execution>
+                            <id>compile</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>test-compile</id>
+                            <phase>test-compile</phase>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                     <configuration>
                         <source>21</source>
                         <target>21</target>
+                        <parameters>true</parameters>
+                        <compilerArgs>
+                            <arg>-Amapstruct.suppressGeneratorTimestamp=true</arg>
+                            <arg>-Amapstruct.verbose=true</arg>
+                        </compilerArgs>
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>org.mapstruct</groupId>
@@ -107,6 +142,7 @@
                         </annotationProcessorPaths>
                     </configuration>
                 </plugin>
+
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
@@ -150,53 +186,53 @@
                         <excludes>
                             <!-- Entities/Models - JPA entities without business logic -->
                             <exclude>**/entity/**</exclude>
-                            
+
                             <!-- DTOs - Simple Data Transfer Objects (POJOs) -->
                             <exclude>**/dto/**</exclude>
-                            
+
                             <!-- Domain objects - Simple Request/Response/Domain classes (POJOs) -->
                             <exclude>**/domain/**</exclude>
-                            
+
                             <!-- Generated MapStruct mapper implementations -->
                             <exclude>**/*MapperImpl.class</exclude>
                             <exclude>**/*Mapper$*Impl.class</exclude>
-                            
+
                             <!-- Spring Boot Application main classes -->
                             <exclude>**/Application.class</exclude>
-                            
+
                             <!-- Test configuration classes -->
                             <exclude>**/config/TestApplication.class</exclude>
-                            
+
                             <!-- Repository interfaces - Spring Data JPA -->
                             <exclude>**/repository/**</exclude>
-                            
+
                             <!-- Enums -->
                             <exclude>**/*Status.class</exclude>
                             <exclude>**/*Type.class</exclude>
                             <exclude>**/*Role.class</exclude>
-                            
+
                             <!-- Simple exception classes (keep exception handlers that have business logic) -->
                             <exclude>**/exception/BusinessException.class</exclude>
                             <exclude>**/exception/EntityNotFoundException.class</exclude>
                             <exclude>**/exception/ApiError.class</exclude>
                             <exclude>**/exception/InsufficientStockException.class</exclude>
                             <exclude>**/exception/PaymentProcessingException.class</exclude>
-                            
+
                             <!-- Adapter interfaces (keep implementations) -->
                             <exclude>**/adapter/*Adapter.class</exclude>
-                            
+
                             <!-- Provider interfaces (keep implementations) -->
                             <exclude>**/provider/*Provider.class</exclude>
-                            
+
                             <!-- Service interfaces (keep implementations) -->
                             <exclude>**/service/*Service.class</exclude>
-                            
+
                             <!-- Mapper interfaces (MapStruct) - implementations are generated -->
                             <exclude>**/mapper/*Mapper.class</exclude>
-                            
+
                             <!-- Package-info files -->
                             <exclude>**/package-info.class</exclude>
-                            
+
                             <!-- Module-info files -->
                             <exclude>**/module-info.class</exclude>
                         </excludes>
