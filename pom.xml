@@ -17,7 +17,7 @@
     <packaging>pom</packaging>
 
     <name>Multi-Module Spring Boot Application</name>
-    <description>Spring Boot 3.2.x multi-module application</description>
+    <description>Spring Boot 3.5.7 multi-module application</description>
 
     <modules>
         <module>common</module>
@@ -40,11 +40,11 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Dependency versions -->
-        <spring-boot.version>3.2.5</spring-boot.version>
-        <mapstruct.version>1.6.2</mapstruct.version>
-        <testcontainers.version>1.19.8</testcontainers.version>
-        <springdoc.version>2.5.0</springdoc.version>
-        <jacoco.version>0.8.12</jacoco.version>
+        <spring-boot.version>3.5.7</spring-boot.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <testcontainers.version>1.20.3</testcontainers.version>
+        <springdoc.version>2.6.0</springdoc.version>
+        <jacoco.version>0.8.13</jacoco.version>
         <groovy.version>4.0.21</groovy.version>
     </properties>
 

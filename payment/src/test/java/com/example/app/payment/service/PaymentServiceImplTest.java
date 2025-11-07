@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -23,10 +23,10 @@ import static org.mockito.Mockito.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {PaymentServiceImpl.class})
 class PaymentServiceImplTest {
 
-    @MockBean
+    @MockitoBean
     private PaymentRepository paymentRepository;
 
-    @MockBean
+    @MockitoBean
     private PaymentProvider paymentProvider;
 
     @Autowired
