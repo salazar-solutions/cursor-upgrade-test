@@ -60,7 +60,7 @@ public class UserController {
     @Operation(summary = "Get user by ID")
     @ApiResponse(responseCode = "200", description = "User found")
     @ApiResponse(responseCode = "404", description = "User not found")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable("id") UUID id) {
         UserResponse response = userService.getUserById(id);
         return ResponseEntity.ok(response);
     }
@@ -70,7 +70,7 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "User updated successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
     @ApiResponse(responseCode = "409", description = "Username or email already exists")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable UUID id, @Valid @RequestBody UserRequest request) {
+    public ResponseEntity<UserResponse> updateUser(@PathVariable("id") UUID id, @Valid @RequestBody UserRequest request) {
         UserResponse response = userService.updateUser(id, request);
         return ResponseEntity.ok(response);
     }
@@ -79,8 +79,8 @@ public class UserController {
     @Operation(summary = "Get all users with pagination")
     @ApiResponse(responseCode = "200", description = "Users retrieved successfully")
     public ResponseEntity<PagedResponse<UserResponse>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         PagedResponse<UserResponse> response = userService.getAllUsers(page, size);
         return ResponseEntity.ok(response);
     }

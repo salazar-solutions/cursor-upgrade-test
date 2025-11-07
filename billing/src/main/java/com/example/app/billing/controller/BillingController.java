@@ -56,7 +56,7 @@ public class BillingController {
     @Operation(summary = "Get payment by ID")
     @ApiResponse(responseCode = "200", description = "Payment found")
     @ApiResponse(responseCode = "404", description = "Payment not found")
-    public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable UUID id) {
+    public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable("id") UUID id) {
         PaymentResponse response = billingService.getPaymentById(id);
         return ResponseEntity.ok(response);
     }

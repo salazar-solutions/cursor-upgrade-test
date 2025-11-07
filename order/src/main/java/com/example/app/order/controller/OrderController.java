@@ -60,7 +60,7 @@ public class OrderController {
     @Operation(summary = "Get order by ID")
     @ApiResponse(responseCode = "200", description = "Order found")
     @ApiResponse(responseCode = "404", description = "Order not found")
-    public ResponseEntity<OrderResponse> getOrderById(@PathVariable UUID id) {
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable("id") UUID id) {
         OrderResponse response = orderService.getOrderById(id);
         return ResponseEntity.ok(response);
     }
@@ -71,8 +71,8 @@ public class OrderController {
     public ResponseEntity<PagedResponse<OrderResponse>> getOrders(
             @RequestParam(required = false) UUID userId,
             @RequestParam(required = false) OrderStatus status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         PagedResponse<OrderResponse> response = orderService.getOrders(userId, status, page, size);
         return ResponseEntity.ok(response);
     }
@@ -83,7 +83,7 @@ public class OrderController {
     @ApiResponse(responseCode = "404", description = "Order not found")
     @ApiResponse(responseCode = "422", description = "Invalid status transition")
     public ResponseEntity<OrderResponse> changeOrderStatus(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Valid @RequestBody OrderStatusChangeRequest request) {
         OrderResponse response = orderService.changeOrderStatus(id, request);
         return ResponseEntity.ok(response);

@@ -54,7 +54,7 @@ public class InventoryController {
     @Operation(summary = "Get inventory for a product")
     @ApiResponse(responseCode = "200", description = "Inventory retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Inventory not found")
-    public ResponseEntity<InventoryResponse> getInventory(@PathVariable UUID productId) {
+    public ResponseEntity<InventoryResponse> getInventory(@PathVariable("productId") UUID productId) {
         InventoryResponse response = inventoryService.getInventory(productId);
         return ResponseEntity.ok(response);
     }
@@ -64,7 +64,7 @@ public class InventoryController {
     @ApiResponse(responseCode = "200", description = "Inventory reserved successfully")
     @ApiResponse(responseCode = "422", description = "Insufficient stock")
     public ResponseEntity<InventoryResponse> reserveInventory(
-            @PathVariable UUID productId,
+            @PathVariable("productId") UUID productId,
             @Valid @RequestBody ReserveRequest request) {
         InventoryResponse response = inventoryService.reserveInventory(productId, request);
         return ResponseEntity.ok(response);
@@ -75,7 +75,7 @@ public class InventoryController {
     @ApiResponse(responseCode = "200", description = "Inventory released successfully")
     @ApiResponse(responseCode = "422", description = "Cannot release more than reserved")
     public ResponseEntity<InventoryResponse> releaseInventory(
-            @PathVariable UUID productId,
+            @PathVariable("productId") UUID productId,
             @Valid @RequestBody ReleaseRequest request) {
         InventoryResponse response = inventoryService.releaseInventory(productId, request);
         return ResponseEntity.ok(response);

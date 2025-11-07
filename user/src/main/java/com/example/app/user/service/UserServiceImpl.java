@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -100,12 +101,14 @@ public class UserServiceImpl implements UserService {
         var user = userRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
 
-        if (!user.getUsername().equals(request.getUsername()) && 
+        if (!Objects.equals(user.getUsername(), request.getUsername()) && 
+            request.getUsername() != null &&
             userRepository.existsByUsername(request.getUsername())) {
             throw new BusinessException("Username already exists");
         }
 
-        if (!user.getEmail().equals(request.getEmail()) && 
+        if (!Objects.equals(user.getEmail(), request.getEmail()) && 
+            request.getEmail() != null &&
             userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException("Email already exists");
         }

@@ -54,7 +54,7 @@ public class ProductController {
     @Operation(summary = "Get product by ID")
     @ApiResponse(responseCode = "200", description = "Product found")
     @ApiResponse(responseCode = "404", description = "Product not found")
-    public ResponseEntity<ProductResponse> getProductById(@PathVariable UUID id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable("id") UUID id) {
         ProductResponse response = productService.getProductById(id);
         return ResponseEntity.ok(response);
     }
@@ -64,8 +64,8 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Products retrieved successfully")
     public ResponseEntity<PagedResponse<ProductResponse>> searchProducts(
             @RequestParam(required = false) String search,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         PagedResponse<ProductResponse> response = productService.searchProducts(search, page, size);
         return ResponseEntity.ok(response);
     }

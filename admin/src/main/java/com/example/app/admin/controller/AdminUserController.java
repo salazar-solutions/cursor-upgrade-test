@@ -29,8 +29,8 @@ public class AdminUserController {
     @Operation(summary = "List all users (admin)")
     @ApiResponse(responseCode = "200", description = "Users retrieved successfully")
     public ResponseEntity<PagedResponse<UserResponse>> listUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         PagedResponse<UserResponse> response = userService.getAllUsers(page, size);
         return ResponseEntity.ok(response);
     }
@@ -39,7 +39,7 @@ public class AdminUserController {
     @Operation(summary = "Disable a user (admin)")
     @ApiResponse(responseCode = "200", description = "User disabled successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
-    public ResponseEntity<Map<String, String>> disableUser(@PathVariable UUID id) {
+    public ResponseEntity<Map<String, String>> disableUser(@PathVariable("id") UUID id) {
         // In a full implementation, this would update a user's enabled/disabled status
         // For now, return a placeholder response
         Map<String, String> response = new HashMap<>();
